@@ -19,6 +19,7 @@ index is de leesbare laag eroverheen.
 | Bestand | Bron | Type | Betrouwbaarheid |
 |---|---|---|---|
 | `Detecting and Quantifying Wash Trading.md` | Victor & Weintraud, WWW '21 | peer-reviewed, **data + code publiek** | **Hoog.** Enige bron met gelabeld resultaat per account op publieke data |
+| `ssrn-4649565.md` | Falk, Tsoukalas & Zhang, *Detecting crypto wash trades via machine learning*, Research Policy (2026) | peer-reviewed, **dataset publiek** | **Hoog.** Gelabelde set van NFT-marktplaatsen + Mt. Gox (Mendeley `4hyxfwzpgg` v2). Beperking: geen CEX-spot |
 | `w30783.md` | Cong, Li, Tang & Yang, *Crypto Wash Trading*, NBER 30783 (2022) | working paper, volledig | **Hoog.** De standaardreferentie: 448 mln transacties, 29 beurzen |
 | `OASIcs.Tokenomics.2021.md` | Cong et al., proceedingsversie | proceedings, **6 pagina's** | Alleen de samenvatting; gebruik `w30783.md` |
 | `Detecting_Wash_Trade_in_Financial_Mar_z_library_sk,_1lib_sk,.md` | Cao, Li, Coleman, Belatreche & McGinnity, *IEEE TNNLS* (2015) | peer-reviewed | **Hoog.** Formele definitie, matching-marges, gesloten cyclus |

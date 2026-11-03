@@ -24,8 +24,8 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Input** | $V_t$, lookback $n$ |
 | **Formule** | Formules §4.3: $z^{\text{rob}}_t = \dfrac{V_t - \text{mediaan}(V)}{1{,}4826 \cdot \text{MAD}(V)}$ |
 | **Output** | score per candle |
-| **Valkuil** | Nieuws, listings en expiraties geven dezelfde piek. Zonder context is dit ruis. |
-| **Status** | `SPEC` |
+| **Valkuil** | Nieuws, listings en expiraties geven dezelfde piek. Zonder context is dit ruis. **Gemeten:** hij scoort hoger op legitiem hoog volume (AUC 0,96) dan op nepvolume (0,88) — zie [08-benchmark.md](08-benchmark.md) §5 |
+| **Status** | `PROTO` — `scripts/detectors_t0.py`, gescoord in [08-benchmark.md](08-benchmark.md) |
 
 ### D02 — Volume per bewegingseenheid
 | | |
@@ -34,8 +34,8 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Input** | $V_t$, $H_t$, $L_t$, $C_t$ |
 | **Formule** | Formules §4.2: $V\!R_t = V_t / (H_t - L_t)$ en $E_t = V_t / \lvert r_t \rvert$ |
 | **Output** | ratio per candle; hoge waarde = veel moeite, weinig resultaat |
-| **Valkuil** | Werkt ook bij echte absorptie (grote passieve order). Niet onderscheidbaar van nepvolume op T0. |
-| **Status** | `SPEC` |
+| **Valkuil** | Werkt ook bij echte absorptie (grote passieve order). Niet onderscheidbaar van nepvolume op T0. **Gemeten:** AUC 0,92 maar recall 0,16 bij drempel 3,5 — het model scheidt wel, de drempel is te streng |
+| **Status** | `PROTO` — `scripts/detectors_t0.py`, gescoord in [08-benchmark.md](08-benchmark.md) |
 
 ### D03 — Rollende prijs-volume-correlatie
 | | |
@@ -45,8 +45,8 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Formule** | Formules §4.1 (Pearson) |
 | **Output** | $\rho \in [-1, 1]$; laag/negatief is verdacht |
 | **Referentie** | Bitcenter (2023) gebruikte dit om één beurs te identificeren met de laagste correlatie van zeven |
-| **Valkuil** | $\rho$ is niet stationair; gebruik een rollend venster en vergelijk met **peer-markten**, niet met een absolute drempel |
-| **Status** | `SPEC` |
+| **Valkuil** | $\rho$ is niet stationair; gebruik een rollend venster en vergelijk met **peer-markten**, niet met een absolute drempel. **Gemeten:** vangt de drie vorm-injecties met AUC 0,97–0,98 en is stil op volumepieken (0,55–0,74) — precies zoals bedoeld |
+| **Status** | `PROTO` — `scripts/detectors_t0.py`, gescoord in [08-benchmark.md](08-benchmark.md) |
 
 ### D04 — Nul-volume en stale candles
 | | |
@@ -56,8 +56,8 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Formule** | Formules §4.7: $\text{nulRatio} = \#\{t: V_t = 0\} / n$ |
 | **Output** | ratio |
 | **Referentie** | Bitwise (SEC 2019) noemt "multiple hours (and days) with zero volume" expliciet als signaal |
-| **Valkuil** | Een kleine beurs heeft legitiem dunne uren. Het signaal is de **discontinuïteit**: uren met veel volume, dan exact nul, dan weer volume |
-| **Status** | `SPEC` |
+| **Valkuil** | Een kleine beurs heeft legitiem dunne uren. Het signaal is de **discontinuïteit**: uren met veel volume, dan exact nul, dan weer volume. **Gemeten:** de enige detector met 1,00/1,00/1,00 — maar dat is een triviale overeenkomst met de injectie |
+| **Status** | `PROTO` — `scripts/detectors_t0.py`, gescoord in [08-benchmark.md](08-benchmark.md) |
 
 ### D05 — Sessieprofiel-afwijking
 | | |
@@ -68,7 +68,7 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Parameters** | basislijn 28 dagen (minimum 14, uitbreidbaar naar 56); zie Formules §4.8 voor de keuze van de mediaan |
 | **Output** | afwijking per uur |
 | **Valkuil** | Vereist minstens enkele weken historie en een markt met een echt sessieprofiel. Bij 24-uurs crypto is het patroon zwakker dan bij aandelen. **Reken de basislijn niet per "zelfde uur, zelfde weekdag"**: 28 dagen geeft dan vier observaties per bucket, en een mediaan van vier is niet robuust. Neem de mediaan over alle dagen binnen dat uur en toets daarna of er een weekdagfactor is |
-| **Status** | `ZWAK` |
+| **Status** | `ZWAK` — `scripts/detectors_t0.py`. **Gemeten:** FPR 0,21–0,23 zodra het uurprofiel ontbreekt; als losse detector onbruikbaar, alleen als bijdrage aan D24 |
 
 ### D06 — Volume zonder range-expansie rond een event
 | | |
@@ -80,7 +80,7 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Output** | $VI$, $RE$ en de combinatie |
 | **Interpretatie** | hoog $VI$ + laag $RE$ = verdacht; hoog + hoog = normale eventactiviteit; laag + hoog = lage liquiditeit; laag + laag = geen bijzondere activiteit |
 | **Valkuil** | Eén normalisatie, niet twee: $VI$ deelt al door de basislijn, dus een extra deling door $\text{mediaan}(VI_{\text{baseline}})$ is per constructie ≈ 1. Vergelijk bovendien gelijke tijdsintervallen en vergelijkbare tijdstippen, anders vertekent het dag-nachtritme de uitkomst |
-| **Status** | `SPEC` — harde afhankelijkheid: een event-kalender met bron, publicatietijd en eventtijd. Achteraf toegevoegde events mogen niet gelden alsof ze vooraf bekend waren. Zonder kalender valt dit terug op D02 |
+| **Status** | `PROTO` — `scripts/detectors_t0.py`. **Gemeten:** precision 1,00, AUC 0,82, recall 0,63, en **nul** fout-positieven op de controlegroep met echte beweging. Harde afhankelijkheid blijft een event-kalender met bron, publicatietijd en eventtijd. Zonder kalender valt dit terug op D02 |
 
 ---
 
@@ -104,6 +104,7 @@ gemeten op 29 centrale beurzen.
 | **Output** | $R_1$, $R_2$, $R_3$ |
 | **Valkuil** | Retailleden handelen ook rond. Vergelijk met een gereguleerde referentievenue op **hetzelfde pair, dezelfde periode** |
 | **Beperking** | **CEX-only.** Op DEX zijn ronde pieken juist normaal gedrag (Victor & Weintraud 2021, §4.3) |
+| **Tekenrisico** | Op NFT-marktplaatsen vonden Falk, Tsoukalas & Zhang (2026) dat **legitieme** trades *méér* rond ronde getallen clusteren dan wash trades. Het signaal kan dus omklappen. Gebruik D07 alleen binnen één venue, nooit als vergelijking tussen venues of asset-klassen |
 | **Status** | `SPEC` (CEX) |
 
 ### D08 — Eerste-cijfer-verdeling (Benford)
@@ -117,6 +118,7 @@ gemeten op 29 centrale beurzen.
 | **Valkuil** | Benford geldt voor groottes over **meerdere ordes van grootte**. Bij een pair met een smalle prijsrange of bij afgeronde tick-groottes faalt de wet ook zonder manipulatie. Bovendien ziet de wet alleen het eerste cijfer, dus mist hij nepvolume dat alle negen cijfers raakt. Gebruik hem als robuustheidstoets, nooit als hoofdmaat |
 | **Parameters** | Operationele drempel, **geen bewezen statistisch minimum**: <500 trades niet classificeren; 500–999 alleen exploratief; 1.000–4.999 voorlopig; 5.000–9.999 screening; 10.000+ robuuster. Gebruik een goodness-of-fit-toets met bootstrap-calibratie in plaats van alleen $\chi^2$ |
 | **Beperking** | **CEX-only** (Victor & Weintraud 2021, §4.3) |
+| **Tekenrisico** | Falk, Tsoukalas & Zhang (2026): op NFT wijken **legitieme** trades *méér* van Benford af dan wash trades. Een gevonden afwijking is dus geen bewijs van manipulatie, en op sommige markten wijst hij de verkeerde kant op |
 | **Status** | `ZWAK` |
 
 ### D09 — Uniformiteit van trade-groottes

@@ -15,6 +15,7 @@ hem daadwerkelijk hebben.
 | Columbia-universiteit (nov. 2025) | Polymarket, 3 jaar | ~25% van het volume wash trading, piek ~60% in dec. 2024; sport ~45%, verkiezingen ~17% |
 | Cong et al. — twee schatters vergeleken | 29 exchanges | Roundness-schatter **77,5%**; Benford-schatter **16,3%** — factor vijf verschil. Roundness is hun hoofdschatter |
 | Victor & Weintraud (WWW '21) | IDEX + EtherDelta, 2017–2020 | **$159 mln** wash-volume; 3,99% resp. 1,30% van alle trades; 31,54% resp. 42,12% van de tokens ooit gewasht; op EtherDelta ~10% van de tokens vrijwel volledig gewasht |
+| Falk, Tsoukalas & Zhang (Research Policy, 2026) | 3 NFT-marktplaatsen, ~27,7 mln trades | **37,58%** van de trades en **60,08%** van de waarde wash. Let op: **NFT, geen CEX** — de spreiding is groot (LooksRare 95,68% van de waarde, OpenSea 26,39%) |
 
 **Waarom 51% en 95% niet in tegenspraak zijn:** ze meten deels verschillende
 grootheden (wash trading versus alle niet-economisch volume), over verschillende
@@ -31,6 +32,7 @@ steekproef en definitie, overdrijft wat het onderzoek ondersteunt.
 | `OASIcs.Tokenomics.2021.md/.pdf` | Cong, Li, Tang & Yang, *Detecting and Quantifying Crypto Wash Trading* | proceedings, **6 pagina's** | **Hoog**, maar dit is alleen de samenvatting |
 | `w30783.md` | Cong, Li, Tang & Yang, *Crypto Wash Trading*, NBER Working Paper 30783 (dec. 2022) | working paper, **volledig** | **Hoog.** De standaardreferentie: 448.475.535 transacties, 29 beurzen, 3 gereguleerd. Let op: niet peer-reviewed op dit moment van schrijven |
 | `Detecting and Quantifying Wash Trading.md/.pdf` | Victor & Weintraud, *Detecting and Quantifying Wash Trading on Decentralized Cryptocurrency Exchanges*, WWW '21 | peer-reviewed, **data + code publiek** | **Hoog.** Enige bron met gelabeld resultaat per account op publieke data. Data: Zenodo `4540223`; code: GitHub `friedhelmvictor/lob-dex-wash-trading-paper` |
+| `ssrn-4649565.md` (PDF in `sources/`) | Falk, Tsoukalas & Zhang, *Detecting crypto wash trades via machine learning*, Research Policy (2026), SSRN 4649565 | peer-reviewed, **dataset publiek** | **Hoog.** Eerste bron met een *gelabelde* set op on-chain data (NFT-marktplaatsen + Mt. Gox) én een eerlijke vergelijking met de indirecte methoden. Beperking: NFT/DEX, geen CEX-spot. Dataset: Mendeley `4hyxfwzpgg` v2 |
 | `srnysearca201901-5164833-183434.md/.pdf` | Bitwise-presentatie aan de SEC (19 maart 2019) | primaire bron, **belanghebbende partij** | Cijfers bruikbaar, maar Bitwise had commercieel belang bij een lage marktkwaliteit |
 | `coin-metrics-prices-methodology.md/.pdf` | Coin Metrics Prices Methodology v1.0 (2023) | primaire methodologie | **Hoog.** Transparant, herleidbaar |
 | `Blockchain Transaction Data Analytics.../` | Springer, eds. Wu, Lin & Zheng (2025) | peer-reviewed boek | **Hoog** voor graafmethoden; bevat **geen** wash-trading-detectie |
@@ -49,8 +51,10 @@ steekproef en definitie, overdrijft wat het onderzoek ondersteunt.
 |---|---|---|---|
 | 1 | Victor & Weintraud, *Detecting and quantifying wash trading on DEX*, WWW 2021 | Enige echte wash-trading-detector voor DEX's | **GESLOTEN** — volledig gelezen, formules in §10, detector D25 |
 | 2 | Cong et al., volledige NBER-versie (w30783) | De detectiemethodiek (Benford, roundness, staart) staat alleen in het volledige paper | **GESLOTEN** — volledig gelezen, roundness-regressie in §11 |
-| 3 | Een gelabelde dataset met wash trades op CEX-spot | Bestaat niet publiek | `OPEN` — zes routes in [03-datalandschap.md](03-datalandschap.md) §6.1 |
+| 3 | Een gelabelde dataset met wash trades op CEX-spot | Bestaat niet publiek | `OPEN` — zes routes in [03-datalandschap.md](03-datalandschap.md) §6.1. **Wel beschikbaar:** een gelabelde **DEX/NFT**-set (Mendeley `4hyxfwzpgg` v2) — bruikbaar als externe toets, geen CEX |
 | 4 | Een publieke bron met orderboek-events inclusief cancels | Nodig voor F4 (spoofing) | `DEELS` — cancellaties zijn afleidbaar uit diepte-diffs, zie [03-datalandschap.md](03-datalandschap.md) §6.2 |
+| 5 | Aloosh & Li (2024), *Direct evidence of bitcoin wash trading*, Management Science 70(12), 8875–8921 | De enige directe CEX-achtige ground truth: gelekte Mt. Gox-data met individuele traders | `TE LEZEN` — gevonden via Falk et al.; DOI `10.1287/mnsc.2021.01448` |
+| 6 | Amiram, Lyandres & Rabetti (2025), *Trading volume manipulation and competition among centralized crypto exchanges*, Management Science | **Dit is CEX**, dus precies onze scope; wij hebben het niet | `TE LEZEN` — DOI `10.1287/mnsc.2021.02903` |
 
 ## 4. Webartikelen die we lazen — met oordeel
 

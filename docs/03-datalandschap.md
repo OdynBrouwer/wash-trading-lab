@@ -149,14 +149,16 @@ het vrijgegeven.
 | # | Route | Wat je krijgt | Kosten/risico |
 |---|---|---|---|
 | **1** | **Victor & Weintraud-dataset**: Zenodo `4540223`, code op GitHub `friedhelmvictor/lob-dex-wash-trading-paper` | Gelabelde wash trades op **accountniveau** mét bedragen. DEX, niet CEX — maar de structuren (self-trade, 2-account, cycli) zijn identiek | Gratis. Beste startpunt |
-| **2** | **Aloosh & Li (2021)** natrekken: verifiëren de Cong-methodologie met **gelekte Mt. Gox-data** waarin je individuele traders hun eigen orders ziet clearen | Dichtstbijzijnde echte **CEX**-ground truth op accountniveau die bestaat | Paper zoeken; ruwe data mogelijk niet publiek |
+| **1b** | **Falk, Tsoukalas & Zhang-dataset**: Mendeley `4hyxfwzpgg` v2 (april 2026), paper in Research Policy | Gelabelde trades van **NFT-marktplaatsen** (LooksRare, Blur, OpenSea) én **Mt. Gox**, met engineered features en een binaire legit/wash-label. Gelabeld met vier on-chain filters: self-trade, heen-en-weer, 3× dezelfde NFT, gemeenschappelijke funder | Gratis en openbaar. **Beste bestaande set om D25 en de T0-detectoren extern te toetsen** — maar het is geen CEX-spot |
+| **2** | **Aloosh & Li (2024)**, *Direct evidence of bitcoin wash trading*, Management Science 70(12), 8875–8921: **gelekte Mt. Gox-data** waarin je individuele traders hun eigen orders ziet clearen | Dichtstbijzijnde echte **CEX**-ground truth op accountniveau die bestaat. Falk et al. gebruiken dezelfde data en halen er AUC 0,97 op | Gepubliceerd (DOI `10.1287/mnsc.2021.01448`); ruwe data mogelijk niet publiek |
 | **3** | **Synthetische injectie** (§3) | Ground truth voor CEX-OHLCV met bekende omvang | Gratis; meet alleen of de implementatie klopt |
 | **4** | Zelf ground truth maken op **testnet/sandbox** | Echte orderflow met bekende labels | **Alleen testnet.** Wash trading op een live beurs is strafbaar onder MiCAR en Rule 575 |
 | 5 | Zwakke labels via kruislingse detectoren | Probabilistische dataset | Circulariteit: je labelt met het model dat je wilt valideren |
 | 6 | Dataverzoek bij platform of toezichthouder onder MiCAR | Echte data | MiCAR verplicht tot detectie, niet tot publicatie. Kans klein |
 
-**Advies:** 1 + 2 nu, 3 parallel. Het vaststellen dát er geen publieke CEX-dataset bestaat
-— mét een inventarisatie van wat er wel is — is zelf een publicatie waard.
+**Advies:** 1 en 1b nu, 2 als de data te krijgen is, 3 parallel. Het vaststellen dát er geen
+publieke CEX-dataset bestaat — mét een inventarisatie van wat er wél is — is zelf een
+publicatie waard.
 
 ### 6.2 Orderboek-events met cancels
 

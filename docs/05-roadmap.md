@@ -34,13 +34,18 @@
 volledig gespecificeerd tot op functiesignatuur.
 
 ### Fase 2 — Synthetische benchmark + T0
-- [ ] Injector bouwen (zie [03-datalandschap.md](03-datalandschap.md) §3) met alle variatieparameters
-- [ ] D01–D06 implementeren
-- [ ] Alle T0-detectoren scoren op de benchmark, inclusief de gevallen waarin ze falen
-- [ ] Publiceren: welke detector welke injectie wel/niet vangt
+- [x] Injector bouwen (`scripts/injector.py`) met acht scenario's en vaste seed
+- [x] D01–D06 implementeren (`scripts/detectors_t0.py`)
+- [x] Alle T0-detectoren scoren op de benchmark, inclusief de gevallen waarin ze falen
+      → [08-benchmark.md](08-benchmark.md)
+- [x] Publiceren: welke detector welke injectie wel/niet vangt
+- [ ] Benchmark herhalen op **echte** BTCUSDT-bars via `injector.load_ohlcv_csv()`
+- [ ] Seed-gevoeligheid meten (seed 1–5) — nu is één seed één datapunt
+- [ ] D02-drempel expliciet afwegen en vastleggen (recall 0,16 is te laag)
 
 **Definition of done:** een resultaattabel met foutmarges, en minstens één detector
-waarvan we hardop zeggen dat hij niet werkt.
+waarvan we hardop zeggen dat hij niet werkt. ✅ Dat is D01: die scoort hoger op
+legitiem hoog volume dan op nepvolume.
 
 ### Fase 3 — T1 (tick-data)
 - [ ] Trades opslaan met agressor-kant

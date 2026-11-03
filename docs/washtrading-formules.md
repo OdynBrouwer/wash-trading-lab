@@ -146,6 +146,18 @@ $$R_k = \frac{\#\{ \text{trades} : V \equiv 0 \pmod{10^{k}} \}}{N}$$
 Vergelijk met dezelfde ratio op een gereguleerde referentievenue. Een sterke verhoging van
 $R_1$ en $R_2$ is een klassiek artefact van geautomatiseerde wash trading.
 
+> **Let op het teken.** Falk, Tsoukalas & Zhang (2026, Research Policy) vinden op drie
+> NFT-marktplaatsen het omgekeerde: **legitieme** trades clusteren daar *méér* rond ronde
+> getallen dan wash trades ("legitimate trades exhibit slightly more clustering around round
+> numbers"). Hetzelfde geldt voor Benford in §3.1: legitieme trades wijken daar *méér* af.
+> De richting van dit signaal is dus niet universeel. Gebruik §3.1 en §3.2 alleen binnen één
+> venue en één asset-klasse, en nooit als vergelijking tussen markten.
+
+### 3.2b Wat dit betekent voor de catalogus
+D07 (roundness) en D08 (Benford) zijn daarmee niet alleen "zwak op DEX", ze kunnen op sommige
+markten de **verkeerde kant** op wijzen. Dat is een zwaardere fout dan een gemiste detectie:
+je markeert dan de eerlijkste handel. Zie `02-detectoren.md`, D07 en D08.
+
 ### 3.3 Uniformiteit van trade-groottes
 Te *weinig* spreiding is verdacht (mensen en instituten variëren nu eenmaal).
 

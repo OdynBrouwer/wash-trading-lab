@@ -3,9 +3,10 @@
 Kennisbasis voor een opensource-project dat nepvolume en wash trading in
 cryptomarkten wil detecteren — en dat eerlijk aangeeft wat het **niet** kan.
 
-**Status:** de kennisbasis staat (8 documenten), D25 is geïmplementeerd en gedraaid op
-een 100 MB-monster van de Victor & Weintraud-data, en de datalaag is ontworpen. Nog
-geen live collector.
+**Status:** de kennisbasis staat (9 documenten), D25 is geïmplementeerd en gedraaid op
+een 100 MB-monster van de Victor & Weintraud-data, de datalaag is ontworpen, en D01–D06
+zijn geïmplementeerd en gescoord op een synthetische benchmark — inclusief de detector
+waarvan we hardop zeggen dat hij niet werkt. Nog geen live collector.
 
 ---
 
@@ -78,12 +79,17 @@ en verdedigbaar, maar het is geen identificatie van een dader.
 │   ├── 05-roadmap.md             fasen en open vragen
 │   ├── 06-juridisch-en-ethiek.md
 │   ├── 07-datalaag.md            streams, opslagschema, gatenbeleid
+│   ├── 08-benchmark.md           welke T0-detector welke injectie vangt
 │   ├── washtrading-formules.md   de canonieke formuleverzameling
 │   └── bronnen/                  index per bron; de tekstconversies blijven lokaal
 ├── scripts/
+│   ├── injector.py               nepvolume injecteren met bekende labels
+│   ├── detectors_t0.py           D01–D06
+│   ├── run_benchmark.py          scoort de detectoren per injectie
 │   ├── check_internal_links.py   controleert alle relatieve links
 │   ├── d25_scc_wash.py           eerste werkende detector (stdlib-only)
 │   └── epub2md.py                EPUB -> Markdown
+├── tests/                        regressietests (stdlib unittest)
 ├── data/                         werkmonsters, git-ignored
 └── sources/                      PDF's en EPUB's, git-ignored
 ```
@@ -102,11 +108,13 @@ nodig heeft.
 ## Controle
 
 ```bash
-python scripts/check_internal_links.py
+python scripts/check_internal_links.py      # alle relatieve links
+python -m unittest discover -s tests -v     # regressietests
+python scripts/run_benchmark.py             # de T0-benchmark opnieuw draaien
 ```
 
-Loopt alle Markdown-bestanden na en lost elke relatieve link op vanuit de map van het
-bestand zelf. Exitcode 1 bij een gebroken link.
+De linkchecker loopt alle Markdown-bestanden na en lost elke relatieve link op vanuit de
+map van het bestand zelf. Exitcode 1 bij een gebroken link.
 
 ---
 
