@@ -44,16 +44,36 @@ Per beurs en per pair heb je twee streams nodig:
 | Stream | Wat je nodig hebt | Waarom |
 |---|---|---|
 | **Trades** | tijdstip, prijs, hoeveelheid, **agressor-kant** | Zonder agressor-kant zijn D11 (gepaarde prints) en D18 (Kyle's λ) niet betrouwbaar |
-| **Diepte-diffs** | prijsniveau, nieuwe hoeveelheid, **volgnummer** | Voor D13–D17; het volgnummer is onmisbaar voor het gatenbeleid |
+| **Diepte-diffs** | prijsniveau, nieuwe hoeveelheid, **volgnummer** | Voor D13, D14, D16 en D17 (D15 vereist eigen fills); het volgnummer is onmisbaar voor het gatenbeleid |
 
-`OPEN` — De agressor-kant is niet op elke venue aanwezig. Dat moet **per venue
-geverifieerd** worden voordat je hem in het schema opneemt; een leeg veld is eerlijker
-dan een geraden waarde.
+**Agressor-kant per venue.** Voor de eerste twee venues is bekend hoe je hem afleidt;
+daarbuiten blijft het verifiëren.
 
-`OPEN` — De exacte streamnamen en endpoints verschillen per beurs en veranderen.
-Niet overnemen uit dit document; per venue controleren in de eigen documentatie.
-De grote beurzen bieden dit doorgaans gratis aan met een publieke sleutel of helemaal
-zonder.
+| Venue | Veld | Afleiding | Status |
+|---|---|---|---|
+| Binance spot | `m` = *was the buyer the maker* | `aggressor = "SELL" if m else "BUY"` | `BEVESTIGD` |
+| Bybit spot | `S` = *side of taker*, `Buy` of `Sell` | direct overnemen | `BEVESTIGD` |
+| OKX spot | `side` = `buy` of `sell` per trade | direct overnemen | `BEVESTIGD` (live call) |
+| Kraken spot | 4e veld van de trade-array: `b` of `s` | direct overnemen | `BEVESTIGD` |
+
+**Regel: nooit de agressor-kant raden uit de prijsbeweging.** Ontbreekt het veld, dan blijft
+het `NULL` en vallen D11 en D18 weg voor die venue. Een leeg veld is eerlijker dan een
+geraden waarde.
+
+**Endpoints.** Neem streamnamen en endpoints nooit uit dit document over: ze verschillen per
+beurs en veranderen. Controleer ze per venue in de documentatie van de beurs zelf. De grote
+beurzen bieden dit doorgaans gratis aan, met of zonder publieke sleutel.
+
+**Tijdstempels.** Bewaar altijd twee velden: de beurs-timestamp en de lokale ontvangsttijd.
+Het verschil daartussen is netwerkvertraging plus verwerkingstijd, en zonder beide kun je die
+twee niet scheiden. Normaliseer naar UTC in milliseconden en bewaar daarnaast de
+oorspronkelijke waarde met zijn eenheid. Let op: Binance levert spot-timestamps in
+milliseconden tot en met 2024 en in **microseconden** vanaf 1 januari 2025. `BEVESTIGD`
+
+**Eén bericht is niet één trade.** Bybit kan tot **1024 trades** in één WebSocket-bericht
+stoppen, en meerdere berichten kunnen hetzelfde `seq` dragen. Een collector die "één bericht =
+één trade" aanneemt, verliest dus data zonder dat er een fout optreedt. Tel altijd de
+`data`-array uit. `BEVESTIGD`
 
 ### 3.2 Aggregator — gerapporteerd volume
 Één call per dag per beurs levert het geclaimde 24u-volume.
@@ -174,13 +194,33 @@ Het belangrijkste onderdeel. Drie regels, niet onderhandelbaar:
 
 ## 11. Openstaande punten
 
-- `OPEN` — **Eén dependency of geen?** Een WebSocket-client zit niet in de
-  standaardbibliotheek. D25 is dependency-vrij; een collector waarschijnlijk niet.
-  Keuze: één kleine dependency accepteren, of WebSocket zelf implementeren (kan, maar
-  levert niets op).
-- `OPEN` — Welke venues en pairs als eerste? Eis: ze moeten **zowel** een trades- als
-  een diepte-stream leveren, anders kun je T1 en T2 nooit vergelijken.
-- `OPEN` — Is de agressor-kant per gekozen venue beschikbaar?
-- `OPEN` — Latentie en doorvoer van deze machine zijn onbekend. Meten vóór ontwerpen:
-  één uur één stream meelopen en kijken of er niets wegvalt.
-- `OPEN` — Clausule in de gebruiksvoorwaarden over het bewaren van data.
+- `BESLOTEN, met correctie` — **Eén dependency of geen?** Het oorspronkelijke advies was "één
+  hoofddependency: cryptofeed". **Dat stuit op de licentie.** cryptofeed is
+  **AGPL-3.0** (met een extra attributieclausule onder §7(b)), en deze repository is MIT.
+  Een AGPL-bibliotheek in dezelfde distributie trekt het geheel in de praktijk naar AGPL, en
+  §13 raakt ook netwerkgebruik. Drie uitwegen:
+  1. **Zelf een minimale collector schrijven** voor twee venues, op `websockets`
+     (BSD-3-Clause) of `aiohttp` (Apache-2.0) — beide permissief. Voor twee venues en vier
+     streams is dat een paar honderd regels; het lastige deel (snapshots, deltas,
+     volgnummers) is per venue gedocumenteerd.
+  2. **De collector als apart component** met een eigen AGPL-licentie en een procesgrens
+     (bestanden of IPC), zodat de MIT-bibliotheek hem niet importeert. Juridisch
+     verdedigbaar, maar complexer en onvriendelijker voor gebruikers.
+  3. **CCXT** is MIT, maar de websocket-laag (CCXT Pro) valt buiten die MIT-licentie.
+
+  **Voorstel: optie 1.** D25 blijft dependency-vrij; de collector krijgt één permissieve
+  dependency.
+- `BESLOTEN` — **Eerste venues en pair:** Binance spot en Bybit spot, beide **BTCUSDT**.
+  Eis blijft: ze moeten zowel een trades- als een diepte-stream leveren, anders kun je T1 en
+  T2 nooit vergelijken. OKX volgt pas als de collector stabiel loopt; Kraken is aanvullend.
+- `BESLOTEN, bevestigd` — **Agressor-kant:** per venue geverifieerd, zie §3.1. Nooit raden.
+- `OPEN` — **Latentie en doorvoer van deze machine.** Protocol: één uur per venue meten en
+  registreren: aantal berichten, aantal trades, aantal diepte-updates, sequence gaps,
+  reconnects, verwerkingstijd, queue-achterstand, CPU en RAM. Acceptatie: geen onverklaarde
+  gaps, geen verloren trades, geen oplopende achterstand, reconnect zonder datagat, geen
+  geheugenlek. Pas daarna de architectuur definitief vastleggen.
+- `OPEN` — **Gebruiksvoorwaarden per venue.** Vier verschillende rechten die je apart moet
+  controleren: (1) publieke toegang tot de marktdata, (2) opslag en archivering,
+  (3) herdistributie van de verzamelde data, (4) publicatie van afgeleide analyses. Tot die
+  controle: ruwe data alleen intern bewaren, niets herdistribueren, en per dataset de bron,
+  de voorwaarden en de verzameldatum vastleggen.

@@ -235,6 +235,27 @@ $$\text{nulRatio} = \frac{\#\{ t : V_t = 0 \}}{n}$$
 Meerdere uren exact nul, terwijl de uren ervoor volume hadden, suggereert dat het volume
 ervoor niet echt was. Echte markten hebben vrijwel nooit exact nul.
 
+### 4.8 Volume-intensiteit (VI)
+Hoeveel volume is dit vergeleken met wat normaal is op dit moment? Dit is **niet** hetzelfde
+als $V\!R$ uit §4.2: dat zet volume tegen *prijsrange*, dit zet volume tegen *zichzelf in het
+verleden*.
+
+$$VI_t = \frac{V_t}{\text{mediaan}(V_{\text{baseline}})}$$
+
+$VI_t = 1$ is normaal, $VI_t > 1$ is meer dan normaal. De mediaan, niet het gemiddelde: één
+uitschieter mag de basislijn niet verschuiven.
+
+**Keuze van de basislijn.** Niet "mediaan van dezelfde weekdag op hetzelfde uur" alleen: bij
+28 dagen levert dat vier observaties per bucket, en een mediaan van vier is niet robuust.
+Neem de mediaan over **alle** dagen in het venster binnen dat uur, en toets daarna of er een
+weekdagfactor is. Is die er, corrigeer dan met een factor $\phi_{\text{dag}}$ per weekdag.
+Venster: standaard 28 dagen, minimum 14, uitbreidbaar naar 56 (zie `02-detectoren.md`, D05).
+
+**Niet dubbel normaliseren.** Wie $VI$ al door de basislijn heeft gedeeld, hoeft dat in de
+detectorscore niet nog eens te doen: $\text{mediaan}(VI_{\text{baseline}}) \approx 1$ per
+constructie, dus een extra deling verandert niets en suggereert ten onrechte een tweede
+correctie.
+
 ---
 
 ## 5. Liquiditeit vs. volume

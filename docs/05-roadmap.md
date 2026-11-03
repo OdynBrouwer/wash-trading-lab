@@ -9,18 +9,26 @@
 - [x] Detectorencatalogus met tier-labels
 - [x] Datalandschap in kaart brengen
 - [x] Juridisch en ethisch kader
-- [ ] **Open**: de vier bronnen uit [04-bronnen.md](04-bronnen.md) §3 ophalen
+- [x] Taxonomy-vragen besloten: twee assen (geldigheid × herkomst) en de nieuwe familie F7
+- [x] Bestaande opensource-initiatieven geïnventariseerd (cryptofeed, CCXT, Hummingbot) —
+      **let op de licenties**: cryptofeed is AGPL-3.0, CCXT MIT (websocket-laag apart),
+      Hummingbot Apache-2.0
+- [ ] **Open**: de vier bronnen uit [04-bronnen.md](04-bronnen.md) §3 ophalen (alleen punt 3
+      staat nog open: een gelabelde CEX-spotdataset bestaat niet publiek)
 
 **Definition of done:** een buitenstaander leest de docs en weet (a) wat nepvolume is,
 (b) wat je nodig hebt om het te meten, en (c) wat je niet kunt weten.
 
 ### Fase 1 — Ontwerp vastleggen
 - [x] Datalaag ontworpen: streams, opslagschema, volumeschatting, gatenbeleid ([07-datalaag.md](07-datalaag.md))
-- [ ] Keuze van de eerste venue-set en het eerste pair (moet data leveren op T0 **en**
-      T1, anders kun je nooit vergelijken)
-- [ ] Definitie van de output-vorm: één score of een score per detector met bijdragen
-- [ ] Keuze licentie (docs: CC BY-SA 4.0; code: MIT of Apache-2.0)
-- [ ] Repositorynaam definitief maken
+- [x] Eerste venue-set en pair: **Binance + Bybit, BTCUSDT spot** (beide leveren trades én
+      diepte, dus T0/T1/T2 zijn vergelijkbaar). OKX volgt na een stabiele collector
+- [x] Definitie van de output-vorm: elke detector levert een waarde **plus** de as die hij
+      meet en een confidence; D24 combineert pas als D01–D23 gescoord zijn
+- [x] Keuze licentie: MIT voor code, CC BY-SA 4.0 voor de documentatie
+- [x] Repositorynaam: `wash-trading-lab`
+- [ ] Vorm van de API vastleggen: functiesignatuur van één detector, tot op het niveau van
+      input- en outputtypes
 
 **Definition of done:** de API-vorm van een detector staat vast, en er is één detector
 volledig gespecificeerd tot op functiesignatuur.
@@ -74,24 +82,29 @@ autonoom genomen. Ze staan hier zodat ze herzien kunnen worden.
 | B6 | `data/` komt in `.gitignore` | Grootte en herdistributierechten | Nee |
 | B7 | Geen enkele detector krijgt een "bewezen"-status zonder benchmarkscore | Voorkomt schijnprecisie | Nee |
 | B8 | Synthetische ground truth in plaats van geen validatie | Enige haalbare middenweg, mits de beperking benoemd wordt | Ja, met tegenargument |
+| B9 | Classificatie op **twee assen** (economische geldigheid × herkomst) in plaats van één lijst | Eén lijst kan echte liquiditeit en kunstmatig volume niet scheiden | Nee, dit is dragend |
+| B10 | Nieuwe familie **F7** (Exchange-Originated Volume); F4 blijft orderboek-manipulatie | Hergebruik van F4 breekt elke verwijzing in `02-detectoren.md` | Nee |
+| B11 | **`VI`** als enige naam voor volume-intensiteit | `VR` is al volume/range in Formules §4.2; twee betekenissen voor één symbool is een bug | Nee |
+| B12 | Eerste venues: **Binance + Bybit, BTCUSDT spot** | Beide leveren trades én diepte, dus T1 en T2 zijn vergelijkbaar; BTCUSDT heeft een diep boek en veel historie | Ja |
+| B13 | **Eén permissieve dependency** voor de collector (`websockets` BSD-3 of `aiohttp` Apache-2.0), niet cryptofeed | cryptofeed is **AGPL-3.0**; dat botst met de MIT-licentie van deze repo. Technisch is het een prima bibliotheek, juridisch niet combineerbaar | Ja, als de repo ooit AGPL wordt |
+| B14 | "Non-economic volume" blijft **literatuurterm**, verdwijnt als **classificatie** | Als categorie niet falsifieerbaar: alles wat je niet begrijpt belandt erin | Ja |
 
-## 3. Openstaande vragen voor de eigenaar
+## 3. Beslissingen van de eigenaar
 
-Deze zijn inhoudelijk en kan ik niet alleen beslissen:
+Deze vragen kan de documentatie niet zelf beantwoorden. Ze zijn nu besloten, en ze staan hier
+zodat ze herzien kunnen worden.
 
-1. **Doel van het project.** Wordt dit een bibliotheek die anderen in hun code
-   importeren, een losse analysetool, of een publiek dashboard? Dat bepaalt de
-   API-vorm in Fase 1 volledig.
-2. **Doelgroep.** Handelaar die zijn venue wil beoordelen, onderzoeker die reproduceerbaar
-   werk wil, of journalist die een claim wil checken? Elk vraagt andere output.
-3. **Publicatiedrempel.** Durven we namen van venues te noemen naast gemeten waarden?
-   Zie [06-juridisch-en-ethiek.md](06-juridisch-en-ethiek.md) §3 — mijn voorstel is nee, of alleen met
-   tegenhanger en periode erbij.
-4. **Onderhoud.** Wie onderhoudt dit over twee jaar? Als het antwoord "niemand" is,
-   moet het ontwerp daarop aangepast worden (weinig dependencies, geen live services).
-5. **Relatie met bestaand werk.** Er zijn bestaande opensource-initiatieven op dit
-   gebied. Voordat we iets bouwen: eerst kijken wat er al is, anders bouwen we een
-   slechtere versie van iets bestaands. `OPEN` — niet onderzocht.
+| # | Vraag | Besluit |
+|---|---|---|
+| 1 | Doel van het project | **Python-bibliotheek met een analysetool erbovenop.** Geen publiek dashboard in deze fase: dat schept druk om venues te rangschikken voordat de detectoren gevalideerd zijn |
+| 2 | Doelgroep | **Onderzoekers eerst** (reproduceerbaarheid, ruwe meetwaarden), daarna handelaren, daarna journalisten |
+| 3 | Publicatiedrempel | **Venue-namen mogen**, maar alleen met meetperiode, pair, marktsegment, detectorversie, datakwaliteit en confidence erbij. Nooit "pleegt wash trading"; wel "verhoogde indicatoren voor kunstmatig volume". Zie [06-juridisch-en-ethiek.md](06-juridisch-en-ethiek.md) §3 |
+| 4 | Onderhoud | **Minimale afhankelijkheden.** Detectoren dependency-vrij, collector optioneel, geen verplichte clouddienst, en de engine moet ook op CSV/Parquet draaien zonder netwerkverbinding |
+| 5 | Relatie met bestaand werk | **Onderzocht**: cryptofeed, CCXT en Hummingbot dekken de collectorkant. **Licentie is hier de beperkende factor**, niet de techniek: cryptofeed is AGPL-3.0 en dat botst met MIT. Conclusie: geen eigen WebSocket-*framework*, maar ook geen AGPL-dependency — zie [07-datalaag.md](07-datalaag.md) §11 |
+
+**Wat dit betekent voor de architectuur:** de collector verzamelt feiten, de detectie-engine
+interpreteert ze, en de classificatie-engine trekt pas daarna conclusies. De collector mag
+nooit bepalen of volume verdacht is.
 
 ## 4. Risico's
 

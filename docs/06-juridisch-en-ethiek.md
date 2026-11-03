@@ -30,13 +30,14 @@ Daarom gebruikt het project woorden als "afwijkend", "verhoogd risico" en
 
 ## 3. Namen van venues
 
-**Voorstel (beslissing B in [05-roadmap.md](05-roadmap.md)):** geen venue noemen als schuldig, en
-namen alleen gebruiken als:
+**Besluit (beslissing 3 in [05-roadmap.md](05-roadmap.md) §3):** een venue noemen mag, maar
+nooit als schuldig, en alleen als:
 
 1. de gemeten waarde, de periode en de methode erbij staan;
 2. er een vergelijkingspunt is (dezelfde meting op andere venues, zelfde moment);
 3. de beperkingen van de meting in dezelfde alinea staan;
-4. er een correctieprocedure is: een venue kan reageren en de meting wordt opnieuw
+4. de confidence en de onzekerheidsmarge gerapporteerd worden;
+5. er een correctieprocedure is: een venue kan reageren en de meting wordt opnieuw
    gedaan.
 
 Reden: een onjuiste beschuldiging van marktmanipulatie is in Nederland en België

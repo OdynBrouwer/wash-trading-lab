@@ -65,19 +65,22 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Doel** | Volume dat geen dag-en-nachtpatroon heeft |
 | **Input** | $V$ per uur, historie per uur |
 | **Formule** | Formules §4.6: $d_h = (V_h - \hat V_h)/\hat\sigma_h$ |
+| **Parameters** | basislijn 28 dagen (minimum 14, uitbreidbaar naar 56); zie Formules §4.8 voor de keuze van de mediaan |
 | **Output** | afwijking per uur |
-| **Valkuil** | Vereist minstens enkele weken historie en een markt met een echt sessieprofiel. Bij 24-uurs crypto is het patroon zwakker dan bij aandelen |
+| **Valkuil** | Vereist minstens enkele weken historie en een markt met een echt sessieprofiel. Bij 24-uurs crypto is het patroon zwakker dan bij aandelen. **Reken de basislijn niet per "zelfde uur, zelfde weekdag"**: 28 dagen geeft dan vier observaties per bucket, en een mediaan van vier is niet robuust. Neem de mediaan over alle dagen binnen dat uur en toets daarna of er een weekdagfactor is |
 | **Status** | `ZWAK` |
 
 ### D06 — Volume zonder range-expansie rond een event
 | | |
 |---|---|
 | **Doel** | Prijsgerichte trucs (F5) rond fixings, listings, expiraties |
-| **Input** | $V_t$, $H_t$, $L_t$, event-tijdstippen |
-| **Formule** | vergelijking van $V\!R_t$ binnen versus buiten het venster |
-| **Output** | ratio binnen/buiten |
-| **Valkuil** | Vereist een event-kalender; zonder die kalender is dit D02 |
-| **Status** | `OPEN` |
+| **Input** | $V_t$, $H_t$, $L_t$, event-kalender |
+| **Formule** | Twee onafhankelijke grootheden. Volume-intensiteit uit Formules §4.8: $VI_t = V_t/\text{mediaan}(V_{\text{baseline}})$. Range-respons: $RE = \text{mediaan}(R_{\text{event}})/\text{mediaan}(R_{\text{baseline}})$ met $R_t = H_t - L_t$. Score: $D06 = \text{mediaan}(VI_{\text{event}})$ |
+| **Parameters** | eventvenster ±30 minuten; baseline dezelfde duur op vergelijkbare niet-eventdagen; minimaal 10 referentieperiodes |
+| **Output** | $VI$, $RE$ en de combinatie |
+| **Interpretatie** | hoog $VI$ + laag $RE$ = verdacht; hoog + hoog = normale eventactiviteit; laag + hoog = lage liquiditeit; laag + laag = geen bijzondere activiteit |
+| **Valkuil** | Eén normalisatie, niet twee: $VI$ deelt al door de basislijn, dus een extra deling door $\text{mediaan}(VI_{\text{baseline}})$ is per constructie ≈ 1. Vergelijk bovendien gelijke tijdsintervallen en vergelijkbare tijdstippen, anders vertekent het dag-nachtritme de uitkomst |
+| **Status** | `SPEC` — harde afhankelijkheid: een event-kalender met bron, publicatietijd en eventtijd. Achteraf toegevoegde events mogen niet gelden alsof ze vooraf bekend waren. Zonder kalender valt dit terug op D02 |
 
 ---
 
@@ -112,6 +115,7 @@ gemeten op 29 centrale beurzen.
 | **Output** | $\chi^2$, p-waarde, per-cijfer-afwijking |
 | **Referentie** | Cong et al. (NBER 30783): de Benford-gebaseerde schatter komt op **16,3%** tegen **77,5%** voor hun roundness-schatter — factor vijf verschil. De auteurs noemen Benford zelf *"somewhat lower bounds"* |
 | **Valkuil** | Benford geldt voor groottes over **meerdere ordes van grootte**. Bij een pair met een smalle prijsrange of bij afgeronde tick-groottes faalt de wet ook zonder manipulatie. Bovendien ziet de wet alleen het eerste cijfer, dus mist hij nepvolume dat alle negen cijfers raakt. Gebruik hem als robuustheidstoets, nooit als hoofdmaat |
+| **Parameters** | Operationele drempel, **geen bewezen statistisch minimum**: <500 trades niet classificeren; 500–999 alleen exploratief; 1.000–4.999 voorlopig; 5.000–9.999 screening; 10.000+ robuuster. Gebruik een goodness-of-fit-toets met bootstrap-calibratie in plaats van alleen $\chi^2$ |
 | **Beperking** | **CEX-only** (Victor & Weintraud 2021, §4.3) |
 | **Status** | `ZWAK` |
 
@@ -179,11 +183,12 @@ wash trading.** Ze meten schijnliquiditeit.
 | | |
 |---|---|
 | **Doel** | Spread die niet verwijdt wanneer volume piekt |
-| **Input** | spread-tijdreeks, volume-tijdreeks |
-| **Formule** | Formules §5.1 (relatieve spread in bp), gekoppeld aan D01 |
-| **Output** | correlatie tussen spread en volume-piek |
-| **Valkuil** | In een echte markt verwijdt de spread bij stress; doet hij dat niet, dan is óf het boek diep, óf het volume nep. Niet te scheiden zonder diepte |
-| **Status** | `OPEN` |
+| **Input** | spread-tijdreeks, volume-tijdreeks, diepte in dezelfde band |
+| **Formule** | Spread in bp uit Formules §5.1, volume-intensiteit uit §4.8, diepte $D(\varepsilon)$ uit §5.2. Score: $D14 = S^{\text{stress}}_{\text{bp}} / S^{\text{normaal}}_{\text{bp}}$ |
+| **Output** | spread-ratio, $VI$ en diepte in dezelfde band ($\varepsilon \in \{0{,}1\%,\,1\%,\,2\%\}$) |
+| **Interpretatie** | spread stabiel + diepte hoog = waarschijnlijk echte liquiditeit; stabiel + diepte laag = mogelijk verdachte prijsweergave; verwijdt + diepte laag = normale stressreactie; verwijdt + diepte hoog = mogelijk veranderde risicopremie |
+| **Valkuil** | Een spread die niet verwijdt bij hoog volume is op zichzelf **geen** bewijs van nepvolume: een uitzonderlijk diep boek geeft hetzelfde beeld. Een negatieve correlatie alleen is dus onvoldoende. De dieptemeting is verplicht voor een sterke uitspraak; zonder diepte is D14 alleen een ondersteunende indicator bij D01 en D13–D17 |
+| **Status** | `SPEC` |
 
 ### D15 — Slippage op eigen ordergrootte
 | | |
@@ -192,8 +197,8 @@ wash trading.** Ze meten schijnliquiditeit.
 | **Input** | mid op beslismoment, VWAP van eigen fills |
 | **Formule** | Formules §5.4 |
 | **Output** | slippage in bp per venue en per grootteklasse |
-| **Valkuil** | Dit is de enige meting op *jouw* formaat, dus de eerlijkste; maar je hebt eigen fills nodig (paper trading volstaat niet exact) |
-| **Status** | `OPEN` |
+| **Valkuil** | Dit is de enige meting op *jouw* formaat, dus de eerlijkste; maar je hebt eigen fills nodig (paper trading volstaat niet exact). **Let op:** dit is de enige detector in de T2-reeks die *niet* met diepte-diffs alleen te draaien is — een diff zegt niets over hoe jóuw order gevuld werd |
+| **Status** | `OPEN` — vereist eigen fills, geen formuleprobleem |
 
 ### D16 — Diepte-herstel
 | | |
@@ -209,11 +214,11 @@ wash trading.** Ze meten schijnliquiditeit.
 | | |
 |---|---|
 | **Doel** | Spoofing/layering (F4) |
-| **Input** | order-events inclusief cancels |
+| **Input** | diepte-diffs + trade-stream (afgeleide cancel-ratio), of order-events met order-ID's als de venue die levert |
 | **Formule** | $\text{OTR} = \#\text{orders}/\#\text{trades}$, $\text{CR} = \#\text{cancels}/\#\text{orders}$, plus levenstijd-verdeling |
 | **Output** | ratio's per account of per prijsniveau |
-| **Valkuil** | Zonder account-ID alleen geaggregeerd meetbaar, wat de foutenkans sterk verhoogt |
-| **Status** | `OPEN` |
+| **Valkuil** | Zonder account-ID alleen geaggregeerd meetbaar, wat de foutenkans sterk verhoogt. **Noem een verdwenen hoeveelheid nooit een cancel**: spreek van `depth_decrease`, en splits in `trade_explained_decrease` (door een waargenomen trade verklaard) en `unexplained_decrease` (niet verklaard). Alleen die laatste is interessant voor spoofingonderzoek, en zelfs dan blijft het een hypothese |
+| **Status** | `SPEC` — de cancel-ratio is afleidbaar uit diepte-diffs plus de trade-stream, zie [03-datalandschap.md](03-datalandschap.md) §6.2 |
 
 ### D18 — Prijsimpact per eenheid orderflow (Kyle's λ)
 | | |

@@ -20,6 +20,13 @@ Het tweede is een superset van het eerste. Wie alleen wash trading telt, komt la
 uit dan wie alle niet-economisch volume telt. **Daarom is het verschil tussen 51% en
 95% geen tegenspraak maar een definitieverschil** — zie [04-bronnen.md](04-bronnen.md) §3.
 
+**Let op:** "non-economic volume" is de term zoals de literatuur hem gebruikt, niet onze
+eigen classificatie. Als classificatie is hij te zwak, want hij is niet falsifieerbaar: alles
+wat je niet begrijpt belandt erin. Wij classificeren daarom op twee assen — economische
+geldigheid en herkomst van het volume. Zie
+[01-taxonomie.md](01-taxonomie.md) §1.1. De term blijft in dit document staan omdat je
+zonder hem niet kunt uitleggen waar de spreiding van 51% tot 95% vandaan komt.
+
 ## 2. In scope
 
 1. **CEX spot** — nepvolume op centrale beurzen. Dit is de eerste scope: de meeste

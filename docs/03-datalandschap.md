@@ -115,14 +115,26 @@ zwakke plekken zichtbaar.
 
 ## 5. Openstaande data-vragen
 
-- `OPEN` — Welke gratis bron levert **per-venue** historische OHLCV van voldoende
-  lengte, met een betrouwbare tijdstempel? Nog niet vastgesteld.
+- `BESLOTEN` — Welke gratis bron levert **per-venue** historische OHLCV? Keuze: **Binance,
+  Bybit en OKX** als primaire bronnen, **Kraken** als aanvullende bron. Ruwe beursdata
+  rechtstreeks opslaan, niet via één aggregator. Bevestigde limieten: Binance publiceert
+  dag- en maandbestanden met klines, aggTrades en trades via `data.binance.vision`; Bybit
+  REST-kline max **1.000** per verzoek; Kraken OHLC max **720** candles en ouder is niet op
+  te halen; OKX levert milliseconde-timestamps. Kraken is daardoor alleen bruikbaar als je
+  ook de trades-route neemt.
 - `DEELS OPGELOST` — Orderboek-events met cancels: bestaan niet als kant-en-klare publieke
-  feed, maar cancellaties zijn **afleidbaar** uit diepte-diffs. Zie §6.2.
-- `OPEN` — Hoe lang moet de basislijn zijn voor D05 (sessieprofiel) om niet elke week
-  opnieuw te kalibreren?
-- `OPEN` — Wat is het minimaal aantal trades voor D08 (Benford) om niet op ruis te
-  toetsen? Vermoeden: duizenden, maar niet onderbouwd.
+  feed, maar diepte-verminderingen zijn **afleidbaar** uit diepte-diffs. Zie §6.2.
+- `BESLOTEN` — Basislijn voor D05: **28 dagen**, minimum 14, uitbreidbaar naar 56. Reken
+  niet per "zelfde uur, zelfde weekdag" (dat geeft 4 observaties per bucket); zie
+  [02-detectoren.md](02-detectoren.md) D05.
+- `BESLOTEN, ONGECONTROLEERD` — Minimum aantal trades voor D08: **5.000 voor screening,
+  10.000 als voorkeur**. Dit is een ontwerpgrens, geen bewezen statistisch minimum, en
+  moet nog empirisch getoetst worden.
+
+**Tijdstempel-valkuil (bevestigd):** Binance levert spot-timestamps in **milliseconden** tot en
+met 2024 en in **microseconden** vanaf 1 januari 2025 — dat staat in de README van
+`binance-public-data`. Normaliseer naar UTC in milliseconden en bewaar daarnaast de
+oorspronkelijke waarde met zijn eenheid.
 
 ---
 
@@ -150,14 +162,21 @@ het vrijgegeven.
 
 Hier is het goede nieuws anders: **dit kun je zelf bouwen.**
 
-De meeste CEX-feeds geven geen order-ID-events, alleen diepte-diffs. Maar een cancel is
-afleidbaar:
+De meeste CEX-feeds geven geen order-ID-events, alleen diepte-diffs. Maar een verdwenen
+hoeveelheid is **niet** automatisch een annulering — het kan ook een uitvoering zijn. Splits
+de afname daarom in drie categorieën:
 
-$$\text{cancel}(p,t) = \Delta q(p,t) < 0 \quad \text{zonder dat er een trade op } p \text{ rond } t \text{ was}$$
+$$\text{depth\_decrease}(p,t): \Delta q(p,t) < 0$$
 
-Sluit dus een depth-diff-stream én een trade-stream op volgnummer op elkaar aan, en
-classificeer elke afname van een prijsniveau als **fill** of **annulering**. Dan heb je de
-cancel-ratio (D17) die nu nog `OPEN` staat.
+- **`trade_explained_decrease`** — de afname is door een waargenomen trade op prijsniveau $p$
+  rond $t$ verklaard;
+- **`unexplained_decrease`** — de afname is niet door een waargenomen trade verklaard;
+- **`depth_increase`** — de zichtbare diepte neemt toe.
+
+Sluit dus een diepte-diff-stream én een trade-stream op volgnummer op elkaar aan. Alleen de
+`unexplained_decrease` is interessant voor spoofingonderzoek (D17), en zelfs dan blijft het
+een hypothese: de order kan ook om een andere, niet-gepubliceerde reden zijn verdwenen.
+D17 is daarmee `SPEC` in plaats van `OPEN`.
 
 | Route | Wat het oplevert | Beperking |
 |---|---|---|
