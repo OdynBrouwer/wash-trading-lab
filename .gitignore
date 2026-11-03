@@ -24,3 +24,9 @@ Thumbs.db
 
 # Chat-transcript met werknotities: geen documentatie, niet publiceren.
 Crypto_wash_trading_analysis.md
+
+# Volledige tekstconversies van boeken en papers van derden: lokaal bewaard,
+# niet in de repo. De rechten liggen bij de uitgevers, niet bij ons.
+# De index docs/bronnen/README.md is eigen werk en blijft wel in de repo.
+docs/bronnen/*.md
+!docs/bronnen/README.md

@@ -79,7 +79,7 @@ en verdedigbaar, maar het is geen identificatie van een dader.
 │   ├── 06-juridisch-en-ethiek.md
 │   ├── 07-datalaag.md            streams, opslagschema, gatenbeleid
 │   ├── washtrading-formules.md   de canonieke formuleverzameling
-│   └── bronnen/                  de 16 boek- en paperconversies + index
+│   └── bronnen/                  index per bron; de tekstconversies blijven lokaal
 ├── scripts/
 │   ├── check_internal_links.py   controleert alle relatieve links
 │   ├── d25_scc_wash.py           eerste werkende detector (stdlib-only)
@@ -92,10 +92,12 @@ De formules staan in [`docs/washtrading-formules.md`](docs/washtrading-formules.
 Dat is de canonieke formuleverzameling; [`docs/02-detectoren.md`](docs/02-detectoren.md)
 verwijst ernaar in plaats van hem te dupliceren.
 
-De originele PDF's en EPUB's staan in `sources/` en worden niet gecommit: te groot, en
-auteursrechtelijk niet iets voor een publieke repo. De Markdown-conversies staan in
-[`docs/bronnen/`](docs/bronnen/README.md), met een index die per bron het
-betrouwbaarheidsoordeel geeft.
+De originele PDF's en EPUB's staan in `sources/` en worden niet gecommit. Dat geldt ook
+voor de Markdown-conversies daarvan: die staan lokaal in `docs/bronnen/` maar **niet**
+in deze repository, omdat de rechten bij de uitgevers liggen. Wat er wél staat is de
+index [`docs/bronnen/README.md`](docs/bronnen/README.md): per bron een oordeel over de
+betrouwbaarheid. Dat oordeel is eigen werk, en dat is het deel dat de volgende lezer
+nodig heeft.
 
 ## Controle
 
@@ -121,9 +123,14 @@ Zie [`docs/04-bronnen.md`](docs/04-bronnen.md) voor de volledige verantwoording.
 
 ## Licentie
 
-`OPEN` — voorstel: **CC BY-SA 4.0** voor de documentatie, **MIT** of **Apache-2.0**
-voor de code zodra die er is. Nog niet vastgelegd; dit is een beslissing voor de
-projecteigenaar.
+- **Code** (`scripts/`): [MIT](LICENSE).
+- **Documentatie** (README en `docs/`): [CC BY-SA 4.0](LICENSE-docs).
+
+Kort: je mag alles gebruiken en aanpassen, ook commercieel, mits je het project noemt
+en een bewerking van de documentatie onder dezelfde licentie deelt.
+
+De conversies van boeken en papers van derden vallen onder geen van beide en staan om
+die reden niet in deze repository — zie [`LICENSE-docs`](LICENSE-docs).
 
 ## Bijdragen
 

@@ -1,8 +1,15 @@
 # bronnen/
 
-Alle documenten die we in bezit hebben, als Markdown-conversie. De originele
-PDF's en EPUB's staan in [`../../sources/`](../../sources/) en worden niet in
-versiebeheer opgenomen.
+Index van alle bronnen die we gelezen hebben. Per bron staat hier ons oordeel over de
+betrouwbaarheid.
+
+**De volledige tekstconversies staan niet in deze repository.** Ze staan lokaal in deze
+map, maar de rechten liggen bij de uitgevers, dus ze worden niet gepubliceerd. Wat je
+hier in de repo vindt is de index; de bestanden zelf worden door `.gitignore`
+tegengehouden.
+
+De originele PDF's en EPUB's staan in [`../../sources/`](../../sources/) en worden om
+dezelfde reden niet in versiebeheer opgenomen.
 
 Bestandsnamen zijn ongewijzigd gelaten (zoals ze uit de conversie kwamen). Deze
 index is de leesbare laag eroverheen.
@@ -36,6 +43,7 @@ De onderbouwing per bron — met steekproef, periode en de kanttekening — staa
 ## Toevoegen
 
 Nieuwe bron toevoegen: converteer naar `.md` (zie `../../scripts/epub2md.py` voor
-EPUB's), zet het bestand hier neer, en voeg een regel toe aan de tabel hierboven
-**met** een betrouwbaarheidsoordeel. Een bron zonder oordeel is een bron waar de
-volgende lezer niet op kan vertrouwen.
+EPUB's), zet het bestand lokaal in deze map — het wordt door `.gitignore` buiten de
+repo gehouden — en voeg **alleen** een regel toe aan de tabel hierboven, met een
+betrouwbaarheidsoordeel. Een bron zonder oordeel is een bron waar de volgende lezer
+niet op kan vertrouwen.

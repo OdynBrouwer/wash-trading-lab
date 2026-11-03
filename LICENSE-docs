@@ -1,0 +1,26 @@
+# Licentie op de documentatie
+
+De documentatie in deze repository — `README.md` en alles onder `docs/`, met
+uitzondering van de inhoud van `docs/bronnen/` — is gelicenseerd onder
+**Creative Commons Naamsvermelding-GelijkDelen 4.0 Internationaal (CC BY-SA 4.0)**.
+
+Wat dat betekent:
+
+- **Delen** mag, ook commercieel.
+- **Aanpassen** mag.
+- Voorwaarde 1: **naamsvermelding** — noem dit project en link naar de repository.
+- Voorwaarde 2: **gelijk delen** — wie een bewerking publiceert, moet dat onder
+  dezelfde licentie doen.
+
+De volledige, juridisch bindende tekst staat op
+<https://creativecommons.org/licenses/by-sa/4.0/legalcode.nl>.
+SPDX-identifier: `CC-BY-SA-4.0`.
+
+## Wat hier niet onder valt
+
+- De **code** in `scripts/` valt onder de MIT-licentie, zie [`LICENSE`](LICENSE).
+- **`docs/bronnen/`** bevat alleen de index met onze eigen beoordeling per bron.
+  De volledige tekstconversies van boeken en papers staan **niet** in deze
+  repository: die rechten liggen bij de oorspronkelijke uitgevers. Waar wij uit
+  die werken citeren, staat de bron erbij. Dat valt onder het citaatrecht en
+  valt niet onder de licentie hierboven.
