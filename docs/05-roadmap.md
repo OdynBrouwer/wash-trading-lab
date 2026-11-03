@@ -17,8 +17,10 @@
       Aloosh & Li (2024) alsnog gevonden via de open repository van Dublin City University
 - [x] Aloosh & Li (2024) volledig gelezen — de enige ground truth op transactieniveau van
       een echte beurs. Kostte D10 zijn status: de staartindex wijst daar de verkeerde kant op
-- [ ] **Open**: de drie resterende bronnen uit [04-bronnen.md](04-bronnen.md) §3 ophalen
-      (Pennec et al. en Amiram et al. zijn niet open; Columbia alleen via SSRN)
+- [x] Amiram, Lyandres & Rabetti (2025) gelezen in de conferentieversie van 2022 — 41 beurzen,
+      en het bewijs dat concurrentie het nepvolume opdrijft
+- [ ] **Open**: Pennec, Fiedler & Ante (2021) uit [04-bronnen.md](04-bronnen.md) §3 halen
+      (niet open; alleen het abstract is beschikbaar) en Columbia's paper-body (SSRN, 403)
 
 **Definition of done:** een buitenstaander leest de docs en weet (a) wat nepvolume is,
 (b) wat je nodig hebt om het te meten, en (c) wat je niet kunt weten.

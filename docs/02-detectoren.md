@@ -120,7 +120,7 @@ gemeten op 29 centrale beurzen.
 | **Parameters** | Operationele drempel, **geen bewezen statistisch minimum**: <500 trades niet classificeren; 500–999 alleen exploratief; 1.000–4.999 voorlopig; 5.000–9.999 screening; 10.000+ robuuster. Gebruik een goodness-of-fit-toets met bootstrap-calibratie in plaats van alleen $\chi^2$ |
 | **Beperking** | **CEX-only** (Victor & Weintraud 2021, §4.3) |
 | **Tekenrisico** | Falk, Tsoukalas & Zhang (2026): op NFT wijken **legitieme** trades *méér* van Benford af dan wash trades. Een gevonden afwijking is dus geen bewijs van manipulatie, en op sommige markten wijst hij de verkeerde kant op |
-| **Empirische steun** | Aloosh & Li (2024) toetsen Benford op echte ground truth (Mt. Gox, accountniveau) en noemen de methode **nuttig** — samen met trade-size clustering, lognormaliteit en structural breaks. Dat maakt Benford de best onderbouwde van de vier, ondanks het tekenrisico hierboven |
+| **Empirische steun** | Aloosh & Li (2024) toetsen Benford op echte ground truth (Mt. Gox, accountniveau) en noemen de methode **nuttig** — samen met trade-size clustering, lognormaliteit en structural breaks. Amiram, Lyandres & Rabetti (2025) gebruiken Benford als een van drie componenten over 41 beurzen en valideren die tegen webpopulariteit, regelgevingsstatus, gemelde manipulatiezaken en de Chinese beursban van 2017. Daarmee is Benford de best onderbouwde van de vier, ondanks het tekenrisico hierboven |
 | **Status** | `ZWAK` |
 
 ### D09 — Uniformiteit van trade-groottes

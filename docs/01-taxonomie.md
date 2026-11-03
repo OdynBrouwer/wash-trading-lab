@@ -186,6 +186,11 @@ Volume om zichtbaarheid, niet om geld.
     consistent met het boeren van een ranking of airdrop, niet met handelswinst. (De in
     eerdere versies genoemde uitsplitsing sport ~45% / verkiezingen ~17% is **niet
     bevestigd**; zie [04-bronnen.md](04-bronnen.md) §1 en §4.)
+  - Amiram, Lyandres & Rabetti (2025), 41 beurzen over 76 maanden: **hoe sterker de
+    concurrentie op een pair, hoe meer nepvolume**. +1 sd concentratie (Herfindahl) gaat
+    samen met 0,1–0,2 sd *minder* nepvolume. Dat is het economische motief van deze
+    familie in één getal: het werkt zolang de ranglijst het gelooft, en het wordt pas
+    gestraft als de reputatie eraan gaat.
 - **Waarom dit de moeilijkste familie is:** er is geen tegenpartij-benadeling. Het
   "slachtoffer" is de ranking, en dus de gebruiker die de ranking leest.
 
