@@ -256,7 +256,7 @@ Hier pas wordt eigendom meetbaar — en dus de eigenlijke definitie van wash tra
 | **Input** | orders met trader-ID, prijs, volume, tijdstip |
 | **Formule** | Formules §1.2–§1.4 |
 | **Output** | alarmering bij een gesloten cyclus |
-| **Referentie** | Cao et al. (2015) |
+| **Referentie** | Cao et al. (2016) |
 | **Valkuil** | Vergt de volledige orderstroom van alle deelnemers. Op on-chain data wél mogelijk, want elke transfer is publiek |
 | **Status** | `SPEC` (on-chain haalbaar) |
 
@@ -277,7 +277,7 @@ Hier pas wordt eigendom meetbaar — en dus de eigenlijke definitie van wash tra
 | **Input** | volledige fill-historie met tegenpartij-identiteit (alleen mogelijk als fills on-chain staan) |
 | **Formule** | aandeel van het volume met de top-$k$ tegenpartijen; entropie van de tegenpartij-verdeling |
 | **Output** | concentratiescore |
-| **Referentie** | Columbia (nov. 2025) op Polymarket: ~25% van het volume over drie jaar, piek ~60% in dec. 2024; sportmarkten ~45%, verkiezingen ~17% |
+| **Referentie** | Columbia (6 nov. 2025) op Polymarket: ~25% van het volume over drie jaar, piek ~60% in dec. 2024. **Niet bevestigd:** de uitsplitsing sport ~45% / verkiezingen ~17% staat niet in het abstract en niet in de berichtgeving — die lazen we niet in de paper-body |
 | **Valkuil** | Werkt alleen op markten die elke fill publiceren. Niet op CEX |
 | **Status** | `SPEC` (on-chain haalbaar) |
 

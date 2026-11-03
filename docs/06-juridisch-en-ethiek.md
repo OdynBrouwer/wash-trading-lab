@@ -26,7 +26,7 @@ Daarom gebruikt het project woorden als "afwijkend", "verhoogd risico" en
 | "Dit volume is nep" | "Dit volume heeft een statistisch profiel dat niet overeenkomt met organische handel" |
 | "Deze detector vindt wash trading" | "Deze detector markeert trades waarvan de kans groter is dat ze niet-economisch zijn" |
 | "Bewezen" | "Gemeten, met deze foutmarge, op deze steekproef" |
-| "95% van het volume is nep" | "Bitwise rapporteerde in 2019 ~95% voor een steekproef van 83 exchanges, met een definitie van nep die zowel wash trading als niet-economisch volume omvat" |
+| "95% van het volume is nep" | "Bitwise rapporteerde in 2019 ~95% voor een steekproef van 81 exchanges, met een definitie van nep die zowel wash trading als niet-economisch volume omvat" |
 
 ## 3. Namen van venues
 

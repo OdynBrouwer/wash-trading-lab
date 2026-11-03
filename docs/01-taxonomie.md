@@ -67,7 +67,7 @@ Eén entiteit is beide kanten van de transactie.
 - **Manipuleert:** volume.
 - **Tier:** T3 (ideaal), T1 (soms: identieke tegenprints), T0 (zwak signaal).
 - **Kenmerk:** geen netto positieverandering, geen economisch motief.
-- **Formele kern:** Cao et al. (2015) formaliseren dit als
+- **Formele kern:** Cao et al. (2016) formaliseren dit als
   $\sum_k \text{OrderPair}_k = ("0", P_T \pm \delta_{Tp}, \pm\delta_v)$ — de
   gesigneerde trader-ID's en volumes vallen weg. Zie formules §1.2.
 - **Moeilijkheid:** de tegenpartij is op publieke data anoniem. Op een CEX zie je
@@ -181,9 +181,11 @@ Volume om zichtbaarheid, niet om geld.
   - Forbes/Javier Paz (2022): het ondeugdelijkste volume zat bij kleine beurzen, waar
     "listing rank en aggregator-zichtbaarheid de voornaamste bron van nieuwe
     gebruikers zijn".
-  - Columbia-onderzoek (nov. 2025) naar Polymarket: ~25% van het volume over drie jaar
+  - Columbia-onderzoek (6 nov. 2025) naar Polymarket: ~25% van het volume over drie jaar
     als wash trading aangemerkt, met veel geflagde wallets die **geen winst maakten** —
-    consistent met het boeren van een ranking of airdrop, niet met handelswinst.
+    consistent met het boeren van een ranking of airdrop, niet met handelswinst. (De in
+    eerdere versies genoemde uitsplitsing sport ~45% / verkiezingen ~17% is **niet
+    bevestigd**; zie [04-bronnen.md](04-bronnen.md) §1 en §4.)
 - **Waarom dit de moeilijkste familie is:** er is geen tegenpartij-benadeling. Het
   "slachtoffer" is de ranking, en dus de gebruiker die de ranking leest.
 

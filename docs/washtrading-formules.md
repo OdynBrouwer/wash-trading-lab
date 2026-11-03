@@ -30,7 +30,7 @@ marktdata-identiteiten (geen specifieke paper).
 
 ### 1.1 Order-representatie met teken
 **Bron:** Cao, Li, Coleman, Belatreche & McGinnity, *Detecting Wash Trade in Financial
-Market Using Digraphs and Dynamic Programming*, IEEE TNNLS (2015), eq. (1).
+Market Using Digraphs and Dynamic Programming*, IEEE TNNLS (2016), eq. (1).
 
 Een order is een tuple; verkoop krijgt een negatief teken op trader én volume:
 
@@ -43,7 +43,7 @@ Een positie is de som van opeenvolgende orders:
 $$\text{Position} = \{(\text{Order}_1), (\text{Order}_2), \dots, (\text{Order}_n)\}$$
 
 ### 1.2 De wash-conditie
-**Bron:** Cao et al. (2015), eq. (2) en de bijbehorende slotalert.
+**Bron:** Cao et al. (2016), eq. (2) en de bijbehorende slotalert.
 
 Een verzameling orders vormt een wash trade als de gesigneerde trader-ID's **en** de
 gesigneerde volumes tegen elkaar wegvallen:
@@ -55,7 +55,7 @@ De marge $\delta_{Tp}$ is de transactiemarge, $\delta_v$ het niet-gematchte rest
 (manipulatoren laten bewust 1–2 % ongematcht om niet op te vallen).
 
 ### 1.3 De drie matching-condities
-**Bron:** Cao et al. (2015), eq. (3), (4), (5).
+**Bron:** Cao et al. (2016), eq. (3), (4), (5).
 
 Voor een buy-order $K$ die matcht met $K-1$ sell-orders $1 \dots K-1$:
 
@@ -78,7 +78,7 @@ $$\text{restvolume} = \frac{\left| V_K - \sum_{k=1}^{K-1} V_k \right|}{\sum_{k=1
 moet klein zijn (in de voorbeelden van de paper ~1 %).
 
 ### 1.4 Gesloten transactiecyclus
-**Bron:** Cao et al. (2015), Feature 2.
+**Bron:** Cao et al. (2016), Feature 2.
 
 Enkel gematchte orders zijn nog geen wash trade. Pas als de uitvoeringen een **gesloten
 cyclus** over de traders vormen, is de positie van de hele groep onveranderd:
@@ -382,7 +382,7 @@ periode en definitie te noemen, overdrijft wat het onderzoek ondersteunt.
 
 | Bron | Type | Betrouwbaarheid |
 |---|---|---|
-| Cao et al., IEEE TNNLS 2015 | peer-reviewed | Hoog — maar vereist order-/accountdata |
+| Cao et al., IEEE TNNLS 2016 | peer-reviewed | Hoog — maar vereist order-/accountdata |
 | Imisiker & Tas, JBEF 2018 | peer-reviewed | Hoog — vereist accountdata, één beurs |
 | Cong, Li, Tang & Yang (NBER 30783) | working paper → Management Science | Hoog — de standaardreferentie |
 | Bitwise (SEC-memo 2019) | primaire bron, belanghebbende partij | Cijfers bruikbaar, maar Bitwise had commercieel belang bij een lage uitkomst |
