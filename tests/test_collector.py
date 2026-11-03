@@ -110,5 +110,29 @@ class TestBybit(unittest.TestCase):
         self.assertIsNone(parse_bybit({"op": "pong", "success": True}))
 
 
+class TestSample(unittest.TestCase):
+    def test_bewaart_nooit_meer_dan_de_capaciteit(self):
+        s = collector.Sample(capacity=100)
+        for i in range(10_000):
+            s.add(float(i))
+        self.assertEqual(len(s.values), 100)
+        self.assertEqual(s.total, 10_000)
+
+    def test_maximum_blijft_exact_ondanks_sampling(self):
+        s = collector.Sample(capacity=50)
+        for i in range(5_000):
+            s.add(float(i))
+        self.assertEqual(s.max, 4999.0)
+
+    def test_kwantielfaalt_niet_op_een_lege_set(self):
+        self.assertIsNone(collector.Sample().quantile(0.95))
+
+    def test_quantile_van_een_kleine_set_klopt(self):
+        s = collector.Sample(capacity=100)
+        for i in range(1, 101):
+            s.add(float(i))
+        self.assertAlmostEqual(s.quantile(0.50), 50.0, delta=1.0)
+
+
 if __name__ == "__main__":
     unittest.main()

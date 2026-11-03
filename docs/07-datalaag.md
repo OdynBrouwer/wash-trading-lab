@@ -228,24 +228,51 @@ Het belangrijkste onderdeel. Drie regels, niet onderhandelbaar:
   gaps, geen verloren trades, geen oplopende achterstand, reconnect zonder datagat, geen
   geheugenlek. Pas daarna de architectuur definitief vastleggen.
 
-  **Voorlopige meting, 3 november 2026, één minuut per venue (BTCUSDT spot):**
+  **Meting, 3 november 2026, één uur per venue (BTCUSDT spot), na elkaar gemeten zodat
+  ze elkaars bandbreedte niet beïnvloeden:**
 
   | | Binance | Bybit |
   |---|---|---|
-  | Trades binnengehaald | 2.852 | 1.308 (uit 347 berichten, max 37 per bericht) |
-  | Diepte-updates | 591 | 2.346 |
+  | Duur | 3.601 s | 3.601 s |
+  | Trades binnengehaald | **246.052** (±68/s) | **96.489** uit 27.979 berichten (±3,45 per bericht, max **115**) |
+  | Diepte-updates | 35.980 | **139.727** |
   | Sequence gaps | **0** | **0** |
   | Reconnects | **0** | **0** |
-  | Latentie p50 / p95 (ms) | 287 / 291 | 238 / 242 |
-  | Parse-tijd p95 | 51 µs (trade), 467 µs (diepte) | 209 µs (trade), 103 µs (diepte) |
-  | Queue-achterstand max | 104 | 10 |
-  | Geheugen (piek) | 1,3 MB | 0,75 MB |
+  | Fouten | **0** | **0** |
+  | Latentie p50 / p95 / max (ms) | 323 / 339 / 684 | 310 / 333 / 415 |
+  | Parse-tijd p95 | 53 µs (trade), 529 µs (diepte) | 197 µs (trade), 117 µs (diepte) |
+  | Queue-achterstand max | 285 | 23 |
 
-  Twee dingen om te onthouden. De latentie is **hoog** voor een publieke stream, en het is
-  bovendien geen zuivere netwerkvertraging: het is beurs-tijd min lokale ontvangsttijd, dus
-  de klokoffset van deze machine zit erin. Het verschil van ~50 ms tussen de twee venues laat
-  zien dat er iets structureels speelt, maar niet wat. Het volledige uur per venue moet nog,
-  en pas dan valt er iets over de architectuur te zeggen.
+  De doorvoer was niet vlak: tussen minuut 30 en 40 kwam er 50.769 trades in één
+  periode van 600 s, bijna dubbel het gemiddelde. De queue liep daarbij op tot 285
+  berichten, maar bleef daarna structureel op 0 staan. Alle 179 voortgangsregels per
+  venue kwamen op tijd — er is geen moment geweest waarop de collector stilviel.
+
+  **Wat deze meting niet bewijst.** "Geen verloren trades" is alleen hard te maken voor
+  de diepte-stream, want daar controleert het volgnummer elke update: 139.727
+  opeenvolgende Bybit-updates zonder één onderbreking. Voor trades hebben beide venues
+  wel een trade-id, maar die controleren we nog niet op gaten. Dat is de eerstvolgende
+  verbetering.
+
+  **Geheugen: hier zat een fout in.** De eerste uitvoering eindigde op 20,7 MB, tegen
+  1,2 MB na één minuut. Oorzaak was niet de verbinding maar de meting zelf: elke
+  latentie werd als float in een lijst bewaard, en dat zijn 564.000 objecten van ±40
+  byte. Op een run van 24 uur was dat richting 500 MB gegroeid. Opgelost met een
+  reservoir van vaste grootte (`Sample` in `scripts/collector.py`), dat wél het echte
+  maximum en het aantal metingen blijft onthouden.
+
+  Na de fix, opnieuw gemeten over 5 minuten per venue:
+
+  | | Berichten | Geheugen |
+  |---|---|---|
+  | Binance vóór de fix (60 min) | 282.032 | 20,65 MB |
+  | Binance ná de fix (5 min) | 19.211 | **1,97 MB** |
+  | Bybit vóór de fix (60 min) | 236.716 | 12,26 MB |
+  | Bybit ná de fix (5 min) | 17.302 | **1,47 MB** |
+
+  Het reservoir is bij Binance al volgelopen (16.221 trades > 10.000), dus dit is het
+  plafond en niet een tussenstand: het geheugengebruik hangt vanaf dat punt niet meer
+  van de duur af.
 - `OPEN` — **Gebruiksvoorwaarden per venue.** Vier verschillende rechten die je apart moet
   controleren: (1) publieke toegang tot de marktdata, (2) opslag en archivering,
   (3) herdistributie van de verzamelde data, (4) publicatie van afgeleide analyses. Tot die

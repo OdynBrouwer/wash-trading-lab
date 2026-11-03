@@ -27,7 +27,6 @@ import asyncio
 import json
 import os
 import random
-import statistics
 import sys
 import time
 import tracemalloc
@@ -87,6 +86,39 @@ class JsonlWriter:
         self._fh.close()
 
 
+class Sample:
+    """Bewaart een begrensd aantal metingen, plus het echte maximum en het totaal.
+
+    Een onbegrensde lijst met latenties lijkt onschuldig, maar na een uur staat er
+    20 MB in en na een dag 500 MB: elke float is een eigen object van ±40 bytes. Deze
+    klasse houdt daarom een reservoir van vaste grootte bij (elke nieuwe meting heeft
+    een kans om een oude te vervangen). Het maximum en het aantal blijven exact.
+    """
+
+    def __init__(self, capacity: int = 10_000, seed: int = 1234):
+        self.capacity = capacity
+        self.values: list[float] = []
+        self.total = 0
+        self.max: float | None = None
+        self._rng = random.Random(seed)
+
+    def add(self, value: float) -> None:
+        self.total += 1
+        if self.max is None or value > self.max:
+            self.max = value
+        if len(self.values) < self.capacity:
+            self.values.append(value)
+        else:
+            j = self._rng.randrange(self.total)
+            if j < self.capacity:
+                self.values[j] = value
+
+    def quantile(self, q: float) -> float | None:
+        if not self.values:
+            return None
+        return sorted(self.values)[min(int(len(self.values) * q), len(self.values) - 1)]
+
+
 class Stats:
     def __init__(self, venue: str):
         self.venue = venue
@@ -104,8 +136,8 @@ class Stats:
                 "batch_max": 0,      # grootste aantal items in één bericht
                 "seq_gaps": 0,
                 "seq_missing": 0,    # aantal ontbrekende volgnummers opgeteld
-                "latency_ms": [],    # beurs-tijd -> ontvangst
-                "parse_us": [],
+                "latency": Sample(),  # beurs-tijd -> ontvangst
+                "parse": Sample(),
             },
         )
 
@@ -120,18 +152,19 @@ class Stats:
             "streams": {},
         }
         for name, s in self.per_stream.items():
-            lat = s["latency_ms"]
-            par = s["parse_us"]
+            lat: Sample = s["latency"]
+            par: Sample = s["parse"]
             out["streams"][name] = {
                 "berichten": s["messages"],
                 "items": s["items"],
                 "items_per_bericht_max": s["batch_max"],
                 "seq_gaps": s["seq_gaps"],
                 "seq_missing": s["seq_missing"],
-                "latentie_ms_p50": round(statistics.median(lat), 1) if lat else None,
-                "latentie_ms_p95": round(sorted(lat)[int(len(lat) * 0.95)], 1) if lat else None,
-                "latentie_ms_max": max(lat) if lat else None,
-                "parse_us_p95": round(sorted(par)[int(len(par) * 0.95)], 1) if par else None,
+                "latentie_ms_p50": round(lat.quantile(0.50), 1) if lat.values else None,
+                "latentie_ms_p95": round(lat.quantile(0.95), 1) if lat.values else None,
+                "latentie_ms_max": lat.max,
+                "latentie_metingen": lat.total,
+                "parse_us_p95": round(par.quantile(0.95), 1) if par.values else None,
             }
         return out
 
@@ -317,9 +350,9 @@ async def pump(
                         s["messages"] += 1
                         s["items"] += len(records)
                         s["batch_max"] = max(s["batch_max"], len(records))
-                        s["parse_us"].append(elapsed_us)
+                        s["parse"].add(elapsed_us)
                         if records:
-                            s["latency_ms"].append(recv - records[0]["ts_exchange_ms"])
+                            s["latency"].add(recv - records[0]["ts_exchange_ms"])
                         if stream == "depth":
                             await queue.put(
                                 ("depth", venue, records[0], seq_of(venue, records[0]), stats)
