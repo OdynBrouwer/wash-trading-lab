@@ -1,0 +1,26 @@
+# Ruwe bronnen: PDF's en EPUB's.
+# Groot, en auteursrechtelijk niet iets om in een publieke repo te zetten.
+sources/
+
+# Werkdata (monsters van externe datasets).
+# data/README.md beschrijft hoe je ze opnieuw ophaalt.
+data/*
+!data/README.md
+*.csv
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editors en OS
+.DS_Store
+Thumbs.db
+
+# Tijdelijk
+*.tmp
+*.log
+
+# Chat-transcript met werknotities: geen documentatie, niet publiceren.
+Crypto_wash_trading_analysis.md

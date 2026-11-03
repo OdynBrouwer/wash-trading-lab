@@ -1,0 +1,7 @@
+# Houd regeleindes gelijk tussen Windows, macOS en Linux.
+* text=auto
+
+# Documentatie en code: altijd LF in de repository.
+*.md text eol=lf
+*.py text eol=lf
+*.csv text eol=lf
