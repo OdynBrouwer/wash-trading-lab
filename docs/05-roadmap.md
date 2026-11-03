@@ -13,8 +13,12 @@
 - [x] Bestaande opensource-initiatieven geïnventariseerd (cryptofeed, CCXT, Hummingbot) —
       **let op de licenties**: cryptofeed is AGPL-3.0, CCXT MIT (websocket-laag apart),
       Hummingbot Apache-2.0
-- [ ] **Open**: de vier bronnen uit [04-bronnen.md](04-bronnen.md) §3 ophalen (alleen punt 3
-      staat nog open: een gelabelde CEX-spotdataset bestaat niet publiek)
+- [x] Broncontrole november 2026: alle bronnen gevalideerd, vijf correcties doorgevoerd, en
+      Aloosh & Li (2024) alsnog gevonden via de open repository van Dublin City University
+- [x] Aloosh & Li (2024) volledig gelezen — de enige ground truth op transactieniveau van
+      een echte beurs. Kostte D10 zijn status: de staartindex wijst daar de verkeerde kant op
+- [ ] **Open**: de drie resterende bronnen uit [04-bronnen.md](04-bronnen.md) §3 ophalen
+      (Pennec et al. en Amiram et al. zijn niet open; Columbia alleen via SSRN)
 
 **Definition of done:** een buitenstaander leest de docs en weet (a) wat nepvolume is,
 (b) wat je nodig hebt om het te meten, en (c) wat je niet kunt weten.
@@ -57,9 +61,12 @@ detectoren *onze eigen injectie* herkennen. T0 blijft een triagefilter, geen bew
 
 ### Fase 3 — T1 (tick-data)
 - [ ] Trades opslaan met agressor-kant
-- [ ] D07–D12 implementeren
+- [ ] D07–D09 en D11–D12 implementeren. **D10 niet**: Aloosh & Li (2024) meten op echte
+      ground truth dat de staartindex de verkeerde kant op wijst, dus die staat op `OPEN`
 - [ ] Zelfde benchmarkscore
 - [ ] Fout-positievenanalyse op D11 (gepaarde prints), de gevaarlijkste detector
+- [ ] D07 kalibreren: de clustering-schatter overschat met factor ~2,4 op Mt. Gox. Zoek uit
+      of die factor stabiel is over venues, of dat hij per beurs opnieuw moet worden bepaald
 
 **Definition of done:** we kunnen kwantitatief zeggen welke T1-detectoren iets
 toevoegen bovenop T0.
@@ -101,6 +108,7 @@ autonoom genomen. Ze staan hier zodat ze herzien kunnen worden.
 | B12 | Eerste venues: **Binance + Bybit, BTCUSDT spot** | Beide leveren trades én diepte, dus T1 en T2 zijn vergelijkbaar; BTCUSDT heeft een diep boek en veel historie | Ja |
 | B13 | **Eén permissieve dependency** voor de collector (`websockets` BSD-3 of `aiohttp` Apache-2.0), niet cryptofeed | cryptofeed is **AGPL-3.0**; dat botst met de MIT-licentie van deze repo. Technisch is het een prima bibliotheek, juridisch niet combineerbaar | Ja, als de repo ooit AGPL wordt |
 | B14 | "Non-economic volume" blijft **literatuurterm**, verdwijnt als **classificatie** | Als categorie niet falsifieerbaar: alles wat je niet begrijpt belandt erin | Ja |
+| B15 | **D10 (staartindex / power law) van `SPEC` naar `OPEN`** | Aloosh & Li (2024) meten op de enige ground truth die bestaat dat wash trades juist *binnen* het Pareto-Lévy-bereik vallen en niet-wash erbuiten — het teken is omgekeerd. Een detector die de verkeerde kant op wijst is erger dan geen detector | Ja, zodra we de richting op eigen CEX-data hebben vastgesteld |
 
 ## 3. Beslissingen van de eigenaar
 

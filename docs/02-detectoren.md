@@ -105,6 +105,7 @@ gemeten op 29 centrale beurzen.
 | **Valkuil** | Retailleden handelen ook rond. Vergelijk met een gereguleerde referentievenue op **hetzelfde pair, dezelfde periode** |
 | **Beperking** | **CEX-only.** Op DEX zijn ronde pieken juist normaal gedrag (Victor & Weintraud 2021, §4.3) |
 | **Tekenrisico** | Op NFT-marktplaatsen vonden Falk, Tsoukalas & Zhang (2026) dat **legitieme** trades *méér* rond ronde getallen clusteren dan wash trades. Het signaal kan dus omklappen. Gebruik D07 alleen binnen één venue, nooit als vergelijking tussen venues of asset-klassen |
+| **Kalibratie** | Aloosh & Li (2024) toetsen deze methode op de gelekte Mt. Gox-administratie: de schatter geeft **3,30%** wash-volume waar de werkelijke omvang **1,4%** is. Richting klopt, **hoogte is factor ~2,4 te hoog** — rapporteer dus een signaal, nooit een percentage. Hun verbetering zit in de definitie van "rond": niet absoluut, maar per groottebucket, met veelvouden van $500 \cdot 10^{-7}$ t/m $500 \cdot 10^{-2}$ BTC in de buckets $(0{,}00025; 0{,}0025]$ t/m $(25; 250]$ |
 | **Status** | `SPEC` (CEX) |
 
 ### D08 — Eerste-cijfer-verdeling (Benford)
@@ -119,6 +120,7 @@ gemeten op 29 centrale beurzen.
 | **Parameters** | Operationele drempel, **geen bewezen statistisch minimum**: <500 trades niet classificeren; 500–999 alleen exploratief; 1.000–4.999 voorlopig; 5.000–9.999 screening; 10.000+ robuuster. Gebruik een goodness-of-fit-toets met bootstrap-calibratie in plaats van alleen $\chi^2$ |
 | **Beperking** | **CEX-only** (Victor & Weintraud 2021, §4.3) |
 | **Tekenrisico** | Falk, Tsoukalas & Zhang (2026): op NFT wijken **legitieme** trades *méér* van Benford af dan wash trades. Een gevonden afwijking is dus geen bewijs van manipulatie, en op sommige markten wijst hij de verkeerde kant op |
+| **Empirische steun** | Aloosh & Li (2024) toetsen Benford op echte ground truth (Mt. Gox, accountniveau) en noemen de methode **nuttig** — samen met trade-size clustering, lognormaliteit en structural breaks. Dat maakt Benford de best onderbouwde van de vier, ondanks het tekenrisico hierboven |
 | **Status** | `ZWAK` |
 
 ### D09 — Uniformiteit van trade-groottes
@@ -141,7 +143,8 @@ gemeten op 29 centrale beurzen.
 | **Output** | $\hat\alpha$ |
 | **Valkuil** | Hill is gevoelig voor de keuze van $n$ (hoeveel staartpunten). Rapporteer altijd de gevoeligheid |
 | **Beperking** | **CEX-only** (Victor & Weintraud 2021, §4.3) |
-| **Status** | `SPEC` (CEX) |
+| **Tekenrisico** | **Gemeten op ground truth, en het teken is omgekeerd.** Aloosh & Li (2024) vinden op Mt. Gox dat *wash* trades $\hat\alpha_{OLS} = 1{,}883$ en $\hat\alpha_{Hill} = 1{,}580$ hebben — precies **binnen** het Pareto-Lévy-bereik $(1,2)$ waar Cong et al. juist *normale* trades verwachten — terwijl *niet-wash* trades op $2{,}674$ en $2{,}054$ zitten, **buiten** dat bereik. Letterlijk: *"the power law test may not be an accurate method for testing the presence of wash trades in a sample"* |
+| **Status** | `OPEN` — gedemoveerd van `SPEC`. Pas weer bruikbaar als de richting op eigen CEX-data is vastgesteld |
 
 ### D11 — Gepaarde prints
 | | |

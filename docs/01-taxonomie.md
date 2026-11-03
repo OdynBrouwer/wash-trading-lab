@@ -218,6 +218,20 @@ Drie gevallen die op elkaar lijken maar niet hetzelfde zijn:
 is. Zonder kennis van beursgerelateerde accounts en wallets is F7 niet te meten — alleen te
 vermoeden. Dat is een harde grens, geen implementatiedetail.
 
+**Direct bewijs dat F7 bestaat.** Aloosh & Li (2024) kregen de gelekte interne administratie
+van Mt. Gox in handen en konden per trade zien welke trader-ID aan beide kanten stond. Drie
+bevindingen die deze familie onderbouwen:
+
+- de 2.887 IDs die aan wash trading deden, omvatten er die *"close ties with the exchange
+  itself"* hebben — dat is F7 in de zuiverste vorm;
+- het wash-traden begint na een **week stilstand** van Mt. Gox in 2011, precies wanneer de
+  beurs liquiditeit moet terugwinnen — dat is het motief dat F7-A beschrijft;
+- het stopt in 2013 wanneer toezichthouders een onderzoek starten.
+
+Let op de grens: dit bewijs komt uit een *gelekte* dataset met account-IDs. Op publieke data
+blijft F7 onmeetbaar. Wat deze bron wél doet, is aantonen dat de categorie niet denkbeeldig
+is en dat het motief klopt.
+
 **Waarom dit nummer F7 is en niet F4:** F4 is in deze taxonomie al orderboek-manipulatie.
 Wie familienummers hergebruikt, breekt elke verwijzing in
 [02-detectoren.md](02-detectoren.md).

@@ -146,6 +146,14 @@ $$R_k = \frac{\#\{ \text{trades} : V \equiv 0 \pmod{10^{k}} \}}{N}$$
 Vergelijk met dezelfde ratio op een gereguleerde referentievenue. Een sterke verhoging van
 $R_1$ en $R_2$ is een klassiek artefact van geautomatiseerde wash trading.
 
+> **Kalibratie op echte ground truth.** Aloosh & Li (2024) toetsen deze methode op de
+> gelekte Mt. Gox-administratie. Met de heuristiek van Cong et al. schat de methode **3,30%**
+> wash-volume, terwijl de werkelijke omvang **1,4%** is — de **richting klopt, de hoogte is
+> een factor ~2,4 te hoog**. Gebruik de uitkomst dus als signaal, nooit als percentage.
+> Hun verbetering: definieer "rond" niet absoluut maar **per groottebucket**, met
+> veelvouden van $500 \cdot 10^{-7}, 500 \cdot 10^{-6}, \dots, 500 \cdot 10^{-2}$ BTC in de
+> buckets $(0{,}00025; 0{,}0025]$, $(0{,}0025; 0{,}025]$, …, $(25; 250]$.
+
 > **Let op het teken.** Falk, Tsoukalas & Zhang (2026, Research Policy) vinden op drie
 > NFT-marktplaatsen het omgekeerde: **legitieme** trades clusteren daar *méér* rond ronde
 > getallen dan wash trades ("legitimate trades exhibit slightly more clustering around round
@@ -178,6 +186,22 @@ $$\hat{\alpha} = \left[ \frac{1}{n} \sum_{i=1}^{n} \ln\!\left(\frac{V_{(i)}}{V_{
 
 met $V_{(1)} \ge V_{(2)} \ge \dots$ de aflopend gesorteerde groottes. Een ontbrekende
 staart (te weinig écht grote trades) wijst op volume dat niet door kapitaal gedragen wordt.
+
+> **Deze formule faalt op echte ground truth — lees dit vóór je hem gebruikt.** Aloosh & Li
+> (2024) meten $\hat\alpha$ op de gelekte Mt. Gox-data, waarvan ze weten welke trades wash
+> zijn (zie [02-detectoren.md](02-detectoren.md), D10):
+
+| Subsample | $\hat\alpha$ (OLS) | $\hat\alpha$ (Hill) | binnen Pareto-Lévy $(1,2)$? |
+|---|---|---|---|
+| **wash trades** | 1,883 | 1,580 | **ja** |
+| **niet-wash** | 2,674 | 2,054 | nee |
+
+> Cong, Li, Tang & Yang (2022) verwachten het omgekeerde: *normale* trades horen in het
+> Pareto-Lévy-bereik te vallen en afwijking daarvan zou op manipulatie wijzen. Op de enige
+> beschikbare ground truth is het teken dus **omgekeerd**. Letterlijke conclusie van de
+> auteurs: *"the power law test may not be an accurate method for testing the presence of
+> wash trades in a sample."* Gebruik deze formule hooguit als beschrijvende statistiek, niet
+> als detector.
 
 ---
 
@@ -393,6 +417,7 @@ periode en definitie te noemen, overdrijft wat het onderzoek ondersteunt.
 | Bitcenter Research (Medium), Finage, Marcio Rosa, Vultax | commercieel / blog | Methodes bruikbaar als idee; verkoopt vaak het product dat het aanprijst |
 | Victor & Weintraud, WWW '21 | peer-reviewed, data + code publiek | **Hoog.** Enige methode met gelabeld resultaat per account op publieke data |
 | Cong et al., NBER 30783 (volledig) | working paper | **Hoog.** De standaardreferentie; 448 mln transacties over 29 beurzen |
+| Aloosh & Li, Management Science 2024 | peer-reviewed, vrije versie via DORAS | **Hoogste.** Enige ground truth op transactieniveau van een echte beurs (Mt. Gox). Toetst §3.1–§3.5: Benford, clustering, lognormaliteit en structural breaks nuttig; **§3.4 (power law) onbetrouwbaar** |
 
 ---
 
