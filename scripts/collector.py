@@ -259,6 +259,7 @@ async def pump(
     while time.monotonic() < stop_at:
         try:
             async with session.ws_connect(url, heartbeat=None, max_msg_size=2**23) as ws:
+                print(f"[{venue}] verbonden met {url.split('?')[0]}", flush=True)
                 if not first:
                     stats.reconnects += 1
                     # Na een reconnect weten we niet welke volgnummers we gemist hebben
@@ -332,6 +333,7 @@ async def pump(
             raise
         except Exception as exc:  # netwerk, sluiting, parse
             stats.errors.append(f"{type(exc).__name__}: {exc}")
+            print(f"[{venue}] verbindingsfout: {type(exc).__name__}: {exc}", flush=True)
             pause = backoff * (1 + random.random() * 0.5)
             await asyncio.sleep(pause)
             backoff = min(backoff * 2, 30)
@@ -400,9 +402,36 @@ async def run(venue: str, minutes: float, out_dir: str) -> dict:
     tracemalloc.start()
     async with aiohttp.ClientSession() as session:
         consumer = asyncio.create_task(drain(queue, writers, gaps, state))
+
+        def rapporteer_storing(task: asyncio.Task) -> None:
+            """Een schrijftaak die stil sterft, kost je een hele meting. Meld het."""
+            if task.cancelled():
+                return
+            exc = task.exception()
+            if exc is not None:
+                print(f"[{venue}] schrijftaak gestopt: {type(exc).__name__}: {exc}", flush=True)
+
+        consumer.add_done_callback(rapporteer_storing)
+
+        async def voortgang() -> None:
+            while time.monotonic() < stop_at:
+                await asyncio.sleep(20)
+                delen = [
+                    f"{naam}: {s['messages']} berichten, {s['items']} items, "
+                    f"{s['seq_gaps']} gaps"
+                    for naam, s in stats.per_stream.items()
+                ]
+                print(
+                    f"[{venue}] {int(time.monotonic() - t_start)}s | queue {queue.qsize()} | "
+                    + " | ".join(delen),
+                    flush=True,
+                )
+
+        reporter = asyncio.create_task(voortgang())
         try:
             await pump(session, *target, stop_at, stats, queue, gaps, state)
         finally:
+            reporter.cancel()
             await asyncio.sleep(0.5)
             consumer.cancel()
             queue_max = state.get("queue_max", 0)
