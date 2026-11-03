@@ -87,6 +87,7 @@ en verdedigbaar, maar het is geen identificatie van een dader.
 │   ├── injector.py               nepvolume injecteren met bekende labels
 │   ├── detectors_t0.py           D01–D06
 │   ├── run_benchmark.py          scoort de detectoren per injectie
+│   ├── collector.py              publieke CEX-websockets meten (Binance, Bybit)
 │   ├── probe_mendeley_features.py  toetst Falk et al. features op echte labels
 │   ├── check_internal_links.py   controleert alle relatieve links
 │   ├── d25_scc_wash.py           eerste werkende detector (stdlib-only)
@@ -114,6 +115,7 @@ python scripts/check_internal_links.py      # alle relatieve links
 python -m unittest discover -s tests -v     # regressietests
 python scripts/run_benchmark.py             # T0-benchmark op synthetische data
 python scripts/run_benchmark.py --csv data/BTCUSDT-1m-2026-09.csv   # op echte bars
+python scripts/collector.py --minutes 2     # live websockets, Binance + Bybit
 ```
 
 De linkchecker loopt alle Markdown-bestanden na en lost elke relatieve link op vanuit de

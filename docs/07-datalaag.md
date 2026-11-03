@@ -3,7 +3,9 @@
 Hoe live data binnenkomt, hoe je hem opslaat, en vooral: hoe je eerlijk blijft over
 de gaten die erin zitten.
 
-Dit document beschrijft het ontwerp. Er is nog **geen collectorcode**.
+Dit document beschrijft het ontwerp. Er is een **minimale collector** (`scripts/collector.py`)
+die publieke trades en diepte-diffs binnenhaalt en de volgnummers bewaakt. Wat er nog niet is:
+het orderboek reconstrueren uit een snapshot plus diffs.
 
 ---
 
@@ -65,15 +67,21 @@ beurs en veranderen. Controleer ze per venue in de documentatie van de beurs zel
 beurzen bieden dit doorgaans gratis aan, met of zonder publieke sleutel.
 
 **Tijdstempels.** Bewaar altijd twee velden: de beurs-timestamp en de lokale ontvangsttijd.
-Het verschil daartussen is netwerkvertraging plus verwerkingstijd, en zonder beide kun je die
-twee niet scheiden. Normaliseer naar UTC in milliseconden en bewaar daarnaast de
-oorspronkelijke waarde met zijn eenheid. Let op: Binance levert spot-timestamps in
-milliseconden tot en met 2024 en in **microseconden** vanaf 1 januari 2025. `BEVESTIGD`
+Het verschil daartussen is netwerkvertraging **plus klokoffset van deze machine** plus
+verwerkingstijd; zonder een referentiemeting kun je die drie niet scheiden. Normaliseer naar
+UTC in milliseconden en bewaar daarnaast de oorspronkelijke waarde met zijn eenheid.
+
+Let op: Binance gebruikt **niet overal dezelfde eenheid**. De live `@trade`-stream leverde op
+3 november 2026 een `T` van 13 cijfers — milliseconden — terwijl de maandelijkse
+klines-bestanden vanaf 2025 microseconden bevatten. Laat de collector de eenheid daarom
+**per bericht afleiden uit de grootte van het getal** en de gevonden eenheid opslaan; dat is
+wat `scripts/collector.py` doet. `BEVESTIGD` (beide eenheden)
 
 **Eén bericht is niet één trade.** Bybit kan tot **1024 trades** in één WebSocket-bericht
 stoppen, en meerdere berichten kunnen hetzelfde `seq` dragen. Een collector die "één bericht =
 één trade" aanneemt, verliest dus data zonder dat er een fout optreedt. Tel altijd de
-`data`-array uit. `BEVESTIGD`
+`data`-array uit. `BEVESTIGD` — in de testrun van 3 november 2026 zaten er gemiddeld 3,8
+trades in een Bybit-bericht en maximaal 37.
 
 ### 3.2 Aggregator — gerapporteerd volume
 Één call per dag per beurs levert het geclaimde 24u-volume.
@@ -214,11 +222,30 @@ Het belangrijkste onderdeel. Drie regels, niet onderhandelbaar:
   Eis blijft: ze moeten zowel een trades- als een diepte-stream leveren, anders kun je T1 en
   T2 nooit vergelijken. OKX volgt pas als de collector stabiel loopt; Kraken is aanvullend.
 - `BESLOTEN, bevestigd` — **Agressor-kant:** per venue geverifieerd, zie §3.1. Nooit raden.
-- `OPEN` — **Latentie en doorvoer van deze machine.** Protocol: één uur per venue meten en
-  registreren: aantal berichten, aantal trades, aantal diepte-updates, sequence gaps,
+- `DEELS BEANTWOORD` — **Latentie en doorvoer van deze machine.** Protocol: één uur per venue
+  meten en registreren: aantal berichten, aantal trades, aantal diepte-updates, sequence gaps,
   reconnects, verwerkingstijd, queue-achterstand, CPU en RAM. Acceptatie: geen onverklaarde
   gaps, geen verloren trades, geen oplopende achterstand, reconnect zonder datagat, geen
   geheugenlek. Pas daarna de architectuur definitief vastleggen.
+
+  **Voorlopige meting, 3 november 2026, één minuut per venue (BTCUSDT spot):**
+
+  | | Binance | Bybit |
+  |---|---|---|
+  | Trades binnengehaald | 2.852 | 1.308 (uit 347 berichten, max 37 per bericht) |
+  | Diepte-updates | 591 | 2.346 |
+  | Sequence gaps | **0** | **0** |
+  | Reconnects | **0** | **0** |
+  | Latentie p50 / p95 (ms) | 287 / 291 | 238 / 242 |
+  | Parse-tijd p95 | 51 µs (trade), 467 µs (diepte) | 209 µs (trade), 103 µs (diepte) |
+  | Queue-achterstand max | 104 | 10 |
+  | Geheugen (piek) | 1,3 MB | 0,75 MB |
+
+  Twee dingen om te onthouden. De latentie is **hoog** voor een publieke stream, en het is
+  bovendien geen zuivere netwerkvertraging: het is beurs-tijd min lokale ontvangsttijd, dus
+  de klokoffset van deze machine zit erin. Het verschil van ~50 ms tussen de twee venues laat
+  zien dat er iets structureels speelt, maar niet wat. Het volledige uur per venue moet nog,
+  en pas dan valt er iets over de architectuur te zeggen.
 - `OPEN` — **Gebruiksvoorwaarden per venue.** Vier verschillende rechten die je apart moet
   controleren: (1) publieke toegang tot de marktdata, (2) opslag en archivering,
   (3) herdistributie van de verzamelde data, (4) publicatie van afgeleide analyses. Tot die
