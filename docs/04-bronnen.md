@@ -32,7 +32,46 @@ steekproef en definitie, overdrijft wat het onderzoek ondersteunt.
 | `OASIcs.Tokenomics.2021.md/.pdf` | Cong, Li, Tang & Yang, *Detecting and Quantifying Crypto Wash Trading* | proceedings, **6 pagina's** | **Hoog**, maar dit is alleen de samenvatting |
 | `w30783.md` | Cong, Li, Tang & Yang, *Crypto Wash Trading*, NBER Working Paper 30783 (dec. 2022) | working paper, **volledig** | **Hoog.** De standaardreferentie: 448.475.535 transacties, 29 beurzen, 3 gereguleerd. Let op: niet peer-reviewed op dit moment van schrijven |
 | `Detecting and Quantifying Wash Trading.md/.pdf` | Victor & Weintraud, *Detecting and Quantifying Wash Trading on Decentralized Cryptocurrency Exchanges*, WWW '21 | peer-reviewed, **data + code publiek** | **Hoog.** Enige bron met gelabeld resultaat per account op publieke data. Data: Zenodo `4540223`; code: GitHub `friedhelmvictor/lob-dex-wash-trading-paper` |
-| `ssrn-4649565.md` (PDF in `sources/`) | Falk, Tsoukalas & Zhang, *Detecting crypto wash trades via machine learning*, Research Policy (2026), SSRN 4649565 | peer-reviewed, **dataset publiek** | **Hoog.** Eerste bron met een *gelabelde* set op on-chain data (NFT-marktplaatsen + Mt. Gox) én een eerlijke vergelijking met de indirecte methoden. Beperking: NFT/DEX, geen CEX-spot. Dataset: Mendeley `4hyxfwzpgg` v2 |
+| `ssrn-4649565.md` (PDF in `sources/`) | Falk, Tsoukalas & Zhang, *Detecting crypto wash trades via machine learning*, Research Policy (2026), SSRN 4649565 | peer-reviewed, **dataset publiek** | **Hoog.** Eerste bron met een *gelabelde* set op on-chain data (NFT-marktplaatsen + Mt. Gox) én een eerlijke vergelijking met de indirecte methoden. Beperking: NFT/DEX, geen CEX-spot. Dataset: Mendeley `4hyxfwzpgg` v2 (CC BY 4.0) |
+
+### Wat er in hun dataset zit — en wat niet
+
+De Mendeley-set is **geen trade-data maar een feature-tabel**. `gox_ml_samples.csv`
+(940 MB, ~5,9 mln rijen) heeft 17 kolommen: `bitcoins`, `round_level`,
+`buyer/seller_24h/7d_trade_count`, vier `btc_sum`-totalen, `price_deviation`,
+`time_since_last_trade`, `hours`, `cumu_wash_percent_opt` en het label `wash`.
+Geen wallet-ID, geen tijdstip, geen OHLCV. De NFT-bestanden (`Blur` 330 MB,
+`LooksRare` 37 MB, `OpenSea` 2 GB) hebben dezelfde vorm.
+
+Gevolg: **geen enkele D01–D06 kan hierop draaien.** Ze vragen allemaal een tijdreeks
+van bars. Wat er wél kan is de vraag die ertoe doet: welke *soort* feature scheidt?
+
+Gemeten met `scripts/probe_mendeley_features.py --mb 24` (150.000 rijen, 35,0% wash):
+
+| Feature | Nodig | AUC |
+|---|---|---|
+| `seller_7d_trade_count` | accounthistorie (T3) | 0,740 |
+| `seller_24h_trade_count` | accounthistorie (T3) | 0,714 |
+| `buyer_7d_trade_count` | accounthistorie (T3) | 0,712 |
+| `seller_all_btc_sum` | accounthistorie (T3) | 0,704 |
+| `cumu_wash_percent_opt` | onduidelijk | 0,537 |
+| `round_level` | **publieke bars (T0)** | 0,524 |
+| `time_since_last_trade` | **publieke bars (T0)** | 0,505 |
+| `price_deviation` | **publieke bars (T0)** | 0,501 |
+| `hours` | **publieke bars (T0)** | 0,498 |
+| `bitcoins` | **publieke bars (T0)** | 0,423 |
+
+**Dit is het hardste bewijs dat we hebben voor de stelling dat T0 het symptoom meet.**
+Op echte gelabelde Mt. Gox-data scoren álle features die je uit publieke bars kunt
+halen op 0,50 — muntworp. De scheiding zit volledig in de tegenpartij-identiteit. Dat
+is geen implementatiefout van ons; het is een eigenschap van de informatie.
+
+Twee dingen die deze meting **niet** zegt: het is één prefix van 150.000 rijen
+(waarschijnlijk aaneengesloten in tijd), en het zijn enkelvoudige features zonder
+cross-validatie. Hun 0,97 komt uit een multivariate XGB met alles tegelijk.
+
+Teruggetrokken verdenking: `cumu_wash_percent_opt` leek een label in vermomming, maar
+scoort 0,54. Geen leakage.
 | `srnysearca201901-5164833-183434.md/.pdf` | Bitwise-presentatie aan de SEC (19 maart 2019) | primaire bron, **belanghebbende partij** | Cijfers bruikbaar, maar Bitwise had commercieel belang bij een lage marktkwaliteit |
 | `coin-metrics-prices-methodology.md/.pdf` | Coin Metrics Prices Methodology v1.0 (2023) | primaire methodologie | **Hoog.** Transparant, herleidbaar |
 | `Blockchain Transaction Data Analytics.../` | Springer, eds. Wu, Lin & Zheng (2025) | peer-reviewed boek | **Hoog** voor graafmethoden; bevat **geen** wash-trading-detectie |
@@ -51,7 +90,7 @@ steekproef en definitie, overdrijft wat het onderzoek ondersteunt.
 |---|---|---|---|
 | 1 | Victor & Weintraud, *Detecting and quantifying wash trading on DEX*, WWW 2021 | Enige echte wash-trading-detector voor DEX's | **GESLOTEN** — volledig gelezen, formules in §10, detector D25 |
 | 2 | Cong et al., volledige NBER-versie (w30783) | De detectiemethodiek (Benford, roundness, staart) staat alleen in het volledige paper | **GESLOTEN** — volledig gelezen, roundness-regressie in §11 |
-| 3 | Een gelabelde dataset met wash trades op CEX-spot | Bestaat niet publiek | `OPEN` — zes routes in [03-datalandschap.md](03-datalandschap.md) §6.1. **Wel beschikbaar:** een gelabelde **DEX/NFT**-set (Mendeley `4hyxfwzpgg` v2) — bruikbaar als externe toets, geen CEX |
+| 3 | Een gelabelde dataset met wash trades op CEX-spot | Bestaat niet publiek | `DEELS` — zes routes in [03-datalandschap.md](03-datalandschap.md) §6.1. **Wel beschikbaar:** een gelabelde **DEX/NFT**-set (Mendeley `4hyxfwzpgg` v2) plus een Mt. Gox-feature-tabel. Die tabel is een *feature*-set, geen tijdreeks, dus D01–D06 kunnen er niet op draaien — maar hij is bruikbaar als externe toets van wat T0-features opleveren (zie de tabel hierboven: 0,50) |
 | 4 | Een publieke bron met orderboek-events inclusief cancels | Nodig voor F4 (spoofing) | `DEELS` — cancellaties zijn afleidbaar uit diepte-diffs, zie [03-datalandschap.md](03-datalandschap.md) §6.2 |
 | 5 | Aloosh & Li (2024), *Direct evidence of bitcoin wash trading*, Management Science 70(12), 8875–8921 | De enige directe CEX-achtige ground truth: gelekte Mt. Gox-data met individuele traders | `TE LEZEN` — gevonden via Falk et al.; DOI `10.1287/mnsc.2021.01448` |
 | 6 | Amiram, Lyandres & Rabetti (2025), *Trading volume manipulation and competition among centralized crypto exchanges*, Management Science | **Dit is CEX**, dus precies onze scope; wij hebben het niet | `TE LEZEN` — DOI `10.1287/mnsc.2021.02903` |

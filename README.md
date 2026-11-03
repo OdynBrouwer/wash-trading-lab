@@ -5,8 +5,9 @@ cryptomarkten wil detecteren — en dat eerlijk aangeeft wat het **niet** kan.
 
 **Status:** de kennisbasis staat (9 documenten), D25 is geïmplementeerd en gedraaid op
 een 100 MB-monster van de Victor & Weintraud-data, de datalaag is ontworpen, en D01–D06
-zijn geïmplementeerd en gescoord op een synthetische benchmark — inclusief de detector
-waarvan we hardop zeggen dat hij niet werkt. Nog geen live collector.
+zijn geïmplementeerd en gescoord op zowel een synthetische reeks als **echte
+Binance-bars** (BTCUSDT, 43.200 minuutbars) — inclusief de detector waarvan we hardop
+zeggen dat hij niet werkt. Nog geen live collector.
 
 ---
 
@@ -86,6 +87,7 @@ en verdedigbaar, maar het is geen identificatie van een dader.
 │   ├── injector.py               nepvolume injecteren met bekende labels
 │   ├── detectors_t0.py           D01–D06
 │   ├── run_benchmark.py          scoort de detectoren per injectie
+│   ├── probe_mendeley_features.py  toetst Falk et al. features op echte labels
 │   ├── check_internal_links.py   controleert alle relatieve links
 │   ├── d25_scc_wash.py           eerste werkende detector (stdlib-only)
 │   └── epub2md.py                EPUB -> Markdown
@@ -110,7 +112,8 @@ nodig heeft.
 ```bash
 python scripts/check_internal_links.py      # alle relatieve links
 python -m unittest discover -s tests -v     # regressietests
-python scripts/run_benchmark.py             # de T0-benchmark opnieuw draaien
+python scripts/run_benchmark.py             # T0-benchmark op synthetische data
+python scripts/run_benchmark.py --csv data/BTCUSDT-1m-2026-09.csv   # op echte bars
 ```
 
 De linkchecker loopt alle Markdown-bestanden na en lost elke relatieve link op vanuit de

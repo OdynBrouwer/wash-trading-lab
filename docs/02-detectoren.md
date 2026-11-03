@@ -24,7 +24,7 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Input** | $V_t$, lookback $n$ |
 | **Formule** | Formules §4.3: $z^{\text{rob}}_t = \dfrac{V_t - \text{mediaan}(V)}{1{,}4826 \cdot \text{MAD}(V)}$ |
 | **Output** | score per candle |
-| **Valkuil** | Nieuws, listings en expiraties geven dezelfde piek. Zonder context is dit ruis. **Gemeten:** hij scoort hoger op legitiem hoog volume (AUC 0,96) dan op nepvolume (0,88) — zie [08-benchmark.md](08-benchmark.md) §5 |
+| **Valkuil** | Nieuws, listings en expiraties geven dezelfde piek. Zonder context is dit ruis. **Gemeten:** hij vangt legitiem hoog volume (AUC 0,96) vrijwel even goed als nepvolume (0,88) — zie [08-benchmark.md](08-benchmark.md) §7.1 |
 | **Status** | `PROTO` — `scripts/detectors_t0.py`, gescoord in [08-benchmark.md](08-benchmark.md) |
 
 ### D02 — Volume per bewegingseenheid
@@ -45,7 +45,7 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Formule** | Formules §4.1 (Pearson) |
 | **Output** | $\rho \in [-1, 1]$; laag/negatief is verdacht |
 | **Referentie** | Bitcenter (2023) gebruikte dit om één beurs te identificeren met de laagste correlatie van zeven |
-| **Valkuil** | $\rho$ is niet stationair; gebruik een rollend venster en vergelijk met **peer-markten**, niet met een absolute drempel. **Gemeten:** vangt de drie vorm-injecties met AUC 0,97–0,98 en is stil op volumepieken (0,55–0,74) — precies zoals bedoeld |
+| **Valkuil** | $\rho$ is niet stationair; gebruik een rollend venster en vergelijk met **peer-markten**, niet met een absolute drempel. **Gemeten:** vangt de drie vorm-injecties op synthetische data met AUC 0,97–0,98 en is stil op volumepieken (0,55–0,74) — precies zoals bedoeld. **Op echte BTCUSDT-bars zakt dit naar AUC 0,87–0,88 en loopt de FPR op naar 0,10–0,21** — zie [08-benchmark.md](08-benchmark.md) §4 |
 | **Status** | `PROTO` — `scripts/detectors_t0.py`, gescoord in [08-benchmark.md](08-benchmark.md) |
 
 ### D04 — Nul-volume en stale candles
@@ -80,7 +80,7 @@ Haalbaar voor iedereen met een grafiek. Meet het **symptoom**, nooit de oorzaak.
 | **Output** | $VI$, $RE$ en de combinatie |
 | **Interpretatie** | hoog $VI$ + laag $RE$ = verdacht; hoog + hoog = normale eventactiviteit; laag + hoog = lage liquiditeit; laag + laag = geen bijzondere activiteit |
 | **Valkuil** | Eén normalisatie, niet twee: $VI$ deelt al door de basislijn, dus een extra deling door $\text{mediaan}(VI_{\text{baseline}})$ is per constructie ≈ 1. Vergelijk bovendien gelijke tijdsintervallen en vergelijkbare tijdstippen, anders vertekent het dag-nachtritme de uitkomst |
-| **Status** | `PROTO` — `scripts/detectors_t0.py`. **Gemeten:** precision 1,00, AUC 0,82, recall 0,63, en **nul** fout-positieven op de controlegroep met echte beweging. Harde afhankelijkheid blijft een event-kalender met bron, publicatietijd en eventtijd. Zonder kalender valt dit terug op D02 |
+| **Status** | `PROTO` — `scripts/detectors_t0.py`. **Gemeten:** precision 1,00, AUC 0,82, recall 0,63, en **nul** fout-positieven op de controlegroep met echte beweging. Op echte BTCUSDT-bars zakt de AUC naar 0,77 en over vijf seeds varieert hij 0,72–0,82 — de minst stabiele van de zes. Harde afhankelijkheid blijft een event-kalender met bron, publicatietijd en eventtijd. Zonder kalender valt dit terug op D02 |
 
 ---
 

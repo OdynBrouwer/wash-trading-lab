@@ -69,11 +69,16 @@ def confusion(flags: list[bool], labels: list[bool]) -> dict[str, float]:
 # --------------------------------------------------------------------------- #
 # Uitvoeren
 # --------------------------------------------------------------------------- #
-def evaluate(days: int, seed: int) -> dict[str, dict[str, dict]]:
-    """resultaten[scenario][detector] = {metrics..., scores}."""
+def evaluate(days: int, seed: int,
+             base: list[dict] | None = None) -> dict[str, dict[str, dict]]:
+    """resultaten[scenario][detector] = {metrics}.
+
+    Met `base` draait dezelfde benchmark op een echte reeks in plaats van de
+    synthetische basis. De injectie is dan de enige nep aan de data.
+    """
     results: dict[str, dict[str, dict]] = {}
     for scenario in injector.SCENARIOS:
-        bars, labels, calendar = injector.build(scenario, days=days, seed=seed)
+        bars, labels, calendar = injector.build(scenario, days=days, seed=seed, bars=base)
         per_detector = {}
         for code in detectors_t0.DETECTORS:
             _name, scores, flags = detectors_t0.run(code, bars, calendar)
@@ -90,9 +95,10 @@ def _fmt(value: float | None, digits: int = 2) -> str:
     return "—" if value is None else f"{value:.{digits}f}"
 
 
-def render(results: dict[str, dict[str, dict]], days: int, seed: int) -> str:
+def render(results: dict[str, dict[str, dict]], days: int, seed: int,
+           source: str = "synthetisch") -> str:
     codes = list(detectors_t0.DETECTORS)
-    lines = [f"### AUC per scenario ({days} dagen, seed {seed})", ""]
+    lines = [f"### AUC per scenario ({days} dagen, seed {seed}, bron: {source})", ""]
     header = "| Scenario | " + " | ".join(codes) + " |"
     lines.append(header)
     lines.append("|---|" + "---|" * len(codes))
@@ -138,11 +144,25 @@ def main(argv: list[str] | None = None) -> int:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--days", type=int, default=60)
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--csv", help="gebruik een echte OHLCV-reeks als basis "
+                                      "(Binance-klines of een CSV met kopregel)")
     parser.add_argument("--out", help="schrijf de tabellen naar dit bestand")
     args = parser.parse_args(argv)
 
-    results = evaluate(args.days, args.seed)
-    report = render(results, args.days, args.seed)
+    base = None
+    if args.csv:
+        base = injector.load_any(args.csv)
+        if len(base) < 500:
+            print(f"{args.csv}: te weinig bars na hersampling ({len(base)})", file=sys.stderr)
+            return 2
+        source = f"{args.csv} ({len(base)} bars van 15 min)"
+        days = len(base) // 96
+    else:
+        source = "synthetisch"
+        days = args.days
+
+    results = evaluate(days, args.seed, base=base)
+    report = render(results, days, args.seed, source=source)
     print(report)
 
     if args.out:

@@ -39,13 +39,21 @@ volledig gespecificeerd tot op functiesignatuur.
 - [x] Alle T0-detectoren scoren op de benchmark, inclusief de gevallen waarin ze falen
       → [08-benchmark.md](08-benchmark.md)
 - [x] Publiceren: welke detector welke injectie wel/niet vangt
-- [ ] Benchmark herhalen op **echte** BTCUSDT-bars via `injector.load_ohlcv_csv()`
-- [ ] Seed-gevoeligheid meten (seed 1–5) — nu is één seed één datapunt
-- [ ] D02-drempel expliciet afwegen en vastleggen (recall 0,16 is te laag)
+- [x] Benchmark herhalen op **echte** BTCUSDT-bars via `load_binance_klines()`
+      → september 2026, 43.200 minuutbars; D03 en D06 veranderen materieel
+- [x] Seed-gevoeligheid meten (seed 1–5) — D06 varieert 0,72–0,82, de rest is stabiel
+- [x] T0-features toetsen op **echte** wash-labels (Mt. Gox, Falk et al.) — alles op 0,50
+- [ ] D02-drempel expliciet afwegen en vastleggen (recall 0,16 synthetisch / 0,43 echt)
+- [ ] D03 valideren op meer maanden en pairs (FPR 0,10–0,21 op echte data)
 
 **Definition of done:** een resultaattabel met foutmarges, en minstens één detector
-waarvan we hardop zeggen dat hij niet werkt. ✅ Dat is D01: die scoort hoger op
-legitiem hoog volume dan op nepvolume.
+waarvan we hardop zeggen dat hij niet werkt. ✅ Dat is D01: die vangt legitiem hoog
+volume vrijwel even goed als nepvolume, ongeacht seed of reeks.
+
+**Belangrijkste uitkomst achteraf:** de toets op échte labels (§8 van
+[08-benchmark.md](08-benchmark.md)) laat zien dat alle features die je uit publieke
+bars kunt halen op 0,50 scoren. De benchmark hierboven meet dus vooral hoe goed onze
+detectoren *onze eigen injectie* herkennen. T0 blijft een triagefilter, geen bewijs.
 
 ### Fase 3 — T1 (tick-data)
 - [ ] Trades opslaan met agressor-kant

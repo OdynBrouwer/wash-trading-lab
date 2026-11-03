@@ -122,6 +122,78 @@ def load_ohlcv_csv(path: str) -> list[dict]:
     return bars
 
 
+def load_binance_klines(path: str) -> list[dict]:
+    """Lees een Binance-klines-CSV (data.binance.vision).
+
+    Die bestanden hebben **geen kopregel** en twaalf kolommen:
+    open_time, open, high, low, close, volume, close_time, quote_volume,
+    aantal_trades, taker_buy_base, taker_buy_quote, ignore.
+
+    Vanaf 2025 staan de tijdstempels in **microseconden**. We normaliseren naar
+    seconden, zodat de rest van de code één eenheid kent.
+    """
+    bars = []
+    with open(path, newline="", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if not line or line[0].isalpha():
+                continue
+            parts = line.split(",")
+            if len(parts) < 6:
+                continue
+            stamp = int(parts[0])
+            if stamp > 10 ** 14:      # microseconden
+                stamp //= 1000
+            bars.append({
+                "ts": stamp // 1000,   # milliseconden -> seconden
+                "o": float(parts[1]),
+                "h": float(parts[2]),
+                "l": float(parts[3]),
+                "c": float(parts[4]),
+                "v": float(parts[5]),
+            })
+    return bars
+
+
+def resample(bars: list[dict], factor: int = 15) -> list[dict]:
+    """Vat `factor` opeenvolgende bars samen: open eerste, high max, low min, volume som."""
+    out = []
+    for start in range(0, len(bars) - factor + 1, factor):
+        chunk = bars[start:start + factor]
+        out.append({
+            "ts": chunk[0]["ts"],
+            "o": chunk[0]["o"],
+            "h": max(bar["h"] for bar in chunk),
+            "l": min(bar["l"] for bar in chunk),
+            "c": chunk[-1]["c"],
+            "v": round(sum(bar["v"] for bar in chunk), 6),
+        })
+    return out
+
+
+def load_any(path: str, to_15m: bool = True) -> list[dict]:
+    """Lees een OHLCV-bestand en schaal naar 15 minuten als het fijner is.
+
+    Herkent het Binance-formaat (geen kopregel) en het gewone CSV-formaat
+    (met kopregel).
+    """
+    with open(path, encoding="utf-8") as handle:
+        first = handle.readline()
+    headless = not any(ch.isalpha() for ch in first)
+
+    if headless:
+        bars = load_binance_klines(path)
+    else:
+        bars = load_ohlcv_csv(path)
+
+    if not to_15m or len(bars) < 2:
+        return bars
+
+    step = bars[1]["ts"] - bars[0]["ts"]
+    factor = max(1, round(900 / step)) if step > 0 else 1
+    return resample(bars, factor) if factor > 1 else bars
+
+
 # --------------------------------------------------------------------------- #
 # Ingrepen
 # --------------------------------------------------------------------------- #
