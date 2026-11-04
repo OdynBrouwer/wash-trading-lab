@@ -4,8 +4,10 @@ Hoe live data binnenkomt, hoe je hem opslaat, en vooral: hoe je eerlijk blijft o
 de gaten die erin zitten.
 
 Dit document beschrijft het ontwerp. Er is een **minimale collector** (`scripts/collector.py`)
-die publieke trades en diepte-diffs binnenhaalt en de volgnummers bewaakt. Wat er nog niet is:
-het orderboek reconstrueren uit een snapshot plus diffs.
+die publieke trades en diepte-diffs binnenhaalt en de volgnummers bewaakt, en een
+**orderboekbouwer** (`scripts/orderbook.py`) die uit een REST-snapshot plus de diffs een
+boek opbouwt — met de aansluitregels die elke beurs zelf voorschrijft. Wat er nog niet is:
+de samengevatte top-of-book-laag uit §4.2 wegschrijven.
 
 ---
 
@@ -127,6 +129,43 @@ Twee lagen, want ruwe diffs zijn te groot om alles te bewaren:
 
 De samengevatte laag is genoeg voor D13–D16. De ruwe laag is alleen nodig voor D17
 (cancel-ratio) en voor heranalyse.
+
+#### Hoe je weet of het boek klopt
+
+Een boek dat er plausibel uitziet, kan stilletjes fout zijn. Drie controles, in
+toenemende sterkte:
+
+1. **Volgnummerketen.** Elke diff moet aansluiten op de vorige. Wijkt hij af, dan is
+   het boek niet meer te vertrouwen en wordt het opnieuw opgebouwd — nooit doorgewerkt.
+   Bij Binance mag het eerste event na de snapshot overlappen
+   ($U \le \text{lastUpdateId}+1 \le u$); dat is aansluiting, geen gat.
+2. **Gekruist boek.** Een bid boven de ask kan niet bestaan. Elke keer dat het
+   gebeurt, is er iets misgegaan. Teller hoort op **0** te staan.
+3. **Niveauaantal en vergelijking met een verse snapshot.** Bij Bybit levert
+   `orderbook.50` precies 50 niveaus per kant; staan er meer, dan worden verwijderingen
+   gemist. En de top-of-book hoort te kloppen met een REST-snapshot die je op dat
+   moment ophaalt — waarbij je moet meewegen hoeveel tijd er tussen zat.
+
+**Gemeten op 4 november 2026**, twee minuten Binance en één minuut Bybit, BTCUSDT spot:
+
+| | Binance | Bybit |
+|---|---|---|
+| Diepte-berichten | 1.186 | 1.738 |
+| Toegepast / weggegooid | 1.183 / 2 | 1.737 / 0 |
+| Echte gaten → herbouw | **1** (sprong van 174 volgnummers) | **0** |
+| Gekruist boek | **0** | **0** |
+| Niveaus per kant | duizenden (volledige diepte) | **50 / 50** (zoals `orderbook.50` hoort) |
+| Boek vs. verse REST-snapshot | 78013,29 / 78013,30 tegen 78013,29 / 78013,30 — **identiek** | 78011,4 / 78011,5 tegen 78011,4 / 78011,5 — **identiek** |
+
+De herbouw bij Binance is het bewijs dat het gatenbeleid werkt: er zat een echt gat in
+de stream, het boek is opnieuw opgebouwd in plaats van doorgewerkt, en het eindresultaat
+klopte alsnog met de beurs.
+
+**Eén valkuil bij die vergelijking.** Een eerste Bybit-meting gaf 3,2 USDT verschil. Dat
+kwam niet door het boek maar door de klok: tussen de laatste verwerkte update en de
+REST-call zat genoeg tijd om de markt te laten bewegen. Daarom staat
+`seconden_sinds_laatste_update` in de uitvoer. Vergelijk je twee momentopnames, dan
+moet je die tijd meewegen of de vergelijking is waardeloos.
 
 ### 4.3 Gatenlog
 ```json
