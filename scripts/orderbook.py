@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import gzip
 import json
 import sys
 import time
@@ -182,6 +183,57 @@ class Sequencer:
         return "toegepast"
 
 
+def topbook_record(book: Book, update_id: int | None, venue: str, ts_ms: int) -> dict:
+    """Eén samengevatte momentopname: top-of-book plus de bovenste tien niveaus.
+
+    Dit is de laag uit docs/07-datalaag.md §4.2 die voor altijd bewaard blijft: klein
+    genoeg om te archiveren, rijk genoeg voor D13–D16.
+    """
+    bid, ask = book.best_bid(), book.best_ask()
+    return {
+        "ts": ts_ms,
+        "venue": venue,
+        "pair": "BTC/USDT",
+        "update_id": update_id,
+        "best_bid": str(bid) if bid is not None else None,
+        "best_bid_qty": str(book.bids[bid]) if bid is not None else None,
+        "best_ask": str(ask) if ask is not None else None,
+        "best_ask_qty": str(book.asks[ask]) if ask is not None else None,
+        "spread_bps": round(book.spread_bps(), 3) if book.spread_bps() is not None else None,
+        "levels_bid": len(book.bids),
+        "levels_ask": len(book.asks),
+        "gekruist": book.is_crossed(),
+        "bids": book.top(10)["bids"],
+        "asks": book.top(10)["asks"],
+    }
+
+
+class TopBookWriter:
+    """Schrijft één NDJSON-regel per seconde, gecomprimeerd, per dag per venue."""
+
+    def __init__(self, directory: Path, venue: str):
+        self.directory = directory
+        self.venue = venue
+        self.directory.mkdir(parents=True, exist_ok=True)
+        self.path = directory / f"{time.strftime('%Y-%m-%d', time.gmtime())}-{venue}-topbook.ndjson.gz"
+        self._fh = gzip.open(self.path, "at", encoding="utf-8", newline="\n")
+        self.records = 0
+
+    def write(self, record: dict) -> None:
+        self._fh.write(json.dumps(record, separators=(",", ":")) + "\n")
+        self.records += 1
+        self._fh.flush()
+
+    def close(self) -> None:
+        self._fh.close()
+
+    def bytes_on_disk(self) -> int:
+        try:
+            return self.path.stat().st_size
+        except OSError:
+            return 0
+
+
 async def fetch_binance_snapshot(session: aiohttp.ClientSession) -> tuple[int, list, list]:
     async with session.get(BINANCE_SNAPSHOT) as r:
         data = await r.json()
@@ -195,19 +247,29 @@ async def fetch_bybit_snapshot(session: aiohttp.ClientSession) -> tuple[int, lis
     return result["u"], result["b"], result["a"]
 
 
-async def run(venue: str, minutes: float) -> dict:
+async def run(venue: str, minutes: float, out_dir: Path) -> dict:
     book = Book()
     seq = Sequencer(venue, book)
     url = BINANCE_URL if venue == "binance" else BYBIT_URL
     subscribe = None if venue == "binance" else {"op": "subscribe", "args": BYBIT_ARGS}
     parse = parse_binance if venue == "binance" else parse_bybit
     fetch = fetch_binance_snapshot if venue == "binance" else fetch_bybit_snapshot
+    topbook = TopBookWriter(out_dir, venue)
 
     stop_at = time.monotonic() + minutes * 60
     t_start = time.monotonic()
     messages = 0
     errors: list[str] = []
     t_last_update = t_start
+
+    async def sample() -> None:
+        """Eén momentopname per seconde, op hele seconden."""
+        tick = time.monotonic()
+        while time.monotonic() < stop_at:
+            if seq.last_update_id is not None and book.bids and book.asks:
+                topbook.write(topbook_record(book, seq.last_update_id, venue, now_ms()))
+            tick += 1.0
+            await asyncio.sleep(max(0.0, tick - time.monotonic()))
 
     async with aiohttp.ClientSession() as session:
         if venue == "binance":
@@ -226,6 +288,7 @@ async def run(venue: str, minutes: float) -> dict:
                     await ws.send_json({"op": "ping"})
 
             ping = asyncio.create_task(keepalive()) if subscribe else None
+            sampler = asyncio.create_task(sample())
             try:
                 while time.monotonic() < stop_at:
                     msg = await asyncio.wait_for(ws.receive(), timeout=40)
@@ -249,6 +312,7 @@ async def run(venue: str, minutes: float) -> dict:
                 errors.append(f"{type(exc).__name__}: {exc}")
                 print(f"[{venue}] fout: {errors[-1]}", flush=True)
             finally:
+                sampler.cancel()
                 if ping:
                     ping.cancel()
 
@@ -256,6 +320,7 @@ async def run(venue: str, minutes: float) -> dict:
         pauze = time.monotonic() - t_last_update
         upd, bids, asks = await fetch(session)
 
+    topbook.close()
     ref = Book()
     ref.replace(bids, asks)
     mid_boek = (book.best_bid() + book.best_ask()) / 2 if book.best_bid() and book.best_ask() else None
@@ -284,6 +349,9 @@ async def run(venue: str, minutes: float) -> dict:
             round(float(abs(mid_boek - mid_rest)), 4)
             if mid_boek is not None and mid_rest is not None else None
         ),
+        "topbook_regels": topbook.records,
+        "topbook_bestand": str(topbook.path),
+        "topbook_kb": round(topbook.bytes_on_disk() / 1024, 1),
         "fouten": errors,
     }
 
@@ -296,15 +364,16 @@ def main() -> int:
     args = parser.parse_args()
 
     venues = ["binance", "bybit"] if args.venue == "beide" else [args.venue]
-    Path(args.out).mkdir(parents=True, exist_ok=True)
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y-%m-%dT%H%M", time.gmtime())
     results = []
     for venue in venues:
         print(f"{venue}: {args.minutes:g} minuten boek opbouwen", flush=True)
-        results.append(asyncio.run(run(venue, args.minutes)))
+        results.append(asyncio.run(run(venue, args.minutes, out_dir)))
         print(json.dumps(results[-1], indent=2, ensure_ascii=False), flush=True)
 
-    with open(Path(args.out) / f"check-{stamp}.json", "w", encoding="utf-8", newline="\n") as fh:
+    with open(out_dir / f"check-{stamp}.json", "w", encoding="utf-8", newline="\n") as fh:
         json.dump(results, fh, indent=2, ensure_ascii=False)
     return 0
 

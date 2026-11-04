@@ -145,5 +145,34 @@ class TestBybitSequencer(unittest.TestCase):
         self.assertNotIn(Decimal("99.0"), book.bids)
 
 
+class TestTopbookRecord(unittest.TestCase):
+    def maak(self):
+        b = orderbook.Book()
+        b.apply([["100.0", "1.5"], ["99.0", "2"]], [["101.0", "3"], ["102.0", "4"]])
+        return b
+
+    def test_bevat_top_of_book_en_tien_niveaus(self):
+        rec = orderbook.topbook_record(self.maak(), 4711, "binance", 1_700_000_000_000)
+        self.assertEqual(rec["best_bid"], "100.0")
+        self.assertEqual(rec["best_bid_qty"], "1.5")
+        self.assertEqual(rec["best_ask"], "101.0")
+        self.assertEqual(rec["update_id"], 4711)
+        self.assertEqual(rec["pair"], "BTC/USDT")
+        self.assertEqual(rec["levels_bid"], 2)
+        self.assertEqual(rec["gekruist"], False)
+        self.assertEqual(rec["bids"][0], ["100.0", "1.5"])
+
+    def test_hoeveelheden_blijven_strings(self):
+        rec = orderbook.topbook_record(self.maak(), 1, "bybit", 0)
+        self.assertIsInstance(rec["best_bid"], str)
+        self.assertIsInstance(rec["bids"][0][1], str)
+
+    def test_leeg_boek_geeft_nullen_in_plaats_van_een_fout(self):
+        rec = orderbook.topbook_record(orderbook.Book(), None, "binance", 0)
+        self.assertIsNone(rec["best_bid"])
+        self.assertIsNone(rec["spread_bps"])
+        self.assertEqual(rec["bids"], [])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -130,6 +130,17 @@ Twee lagen, want ruwe diffs zijn te groot om alles te bewaren:
 De samengevatte laag is genoeg voor D13–D16. De ruwe laag is alleen nodig voor D17
 (cancel-ratio) en voor heranalyse.
 
+**De samengevatte laag wordt nu geschreven.** `scripts/orderbook.py` legt één regel per
+seconde vast in `data/orderbook/<datum>-<venue>-topbook.ndjson.gz`: top-of-book met
+hoeveelheid, spread in basispunten, aantal niveaus per kant, de vlag of het boek gekruist
+was, en de bovenste tien niveaus van beide kanten. Hoeveelheden en prijzen blijven
+strings, zoals hierboven geëist.
+
+Gemeten op 4 november 2026: **108 byte per regel gecomprimeerd**, 59 regels in 59
+seconden, geen enkel interval buiten 0,9–1,1 s. Dat is ±9 MB per venue per dag en
+±3,3 GB per jaar per venue. Bewaarbeleid "voor altijd" uit §8 is dus te dragen, maar
+het is niet gratis — bij twaalf venues zit je op 40 GB per jaar.
+
 #### Hoe je weet of het boek klopt
 
 Een boek dat er plausibel uitziet, kan stilletjes fout zijn. Drie controles, in
